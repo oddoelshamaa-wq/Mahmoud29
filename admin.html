@@ -44,9 +44,28 @@
         #loginScreen input { padding: 12px; width: 280px; margin: 10px; border-radius: 5px; border: none; font-size: 1rem; }
         #loginScreen button { padding: 12px 40px; background: var(--red); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-        /* Sidebar */
-        .sidebar { width: 260px; background: var(--blue); color: white; padding: 20px 10px; display: flex; flex-direction: column; border-left: 5px solid var(--red); }
-        .menu-item { padding: 12px; margin: 5px 0; cursor: pointer; border-radius: 5px; display: flex; align-items: center; gap: 10px; transition: 0.3s; position: relative; }
+        /* Sidebar - UPDATED FOR SCROLLING */
+        .sidebar { 
+            width: 260px; 
+            background: var(--blue); 
+            color: white; 
+            padding: 20px 10px; 
+            display: flex; 
+            flex-direction: column; 
+            border-left: 5px solid var(--red);
+            
+            /* التعديلات الجديدة للسكرول */
+            height: 100vh; 
+            overflow-y: auto; 
+            box-sizing: border-box;
+            padding-bottom: 50px; /* مسافة أمان تحت */
+        }
+        /* شكل السكرول بار للقائمة */
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+
+        .menu-item { padding: 12px; margin: 5px 0; cursor: pointer; border-radius: 5px; display: flex; align-items: center; gap: 10px; transition: 0.3s; position: relative; flex-shrink: 0; }
         .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.1); border-right: 4px solid var(--red); }
         .notification-dot { width: 10px; height: 10px; background: red; border-radius: 50%; position: absolute; left: 15px; display: none; box-shadow: 0 0 5px white; }
 
@@ -147,6 +166,7 @@
         <h2 style="text-align:center; margin-top:0;">
              <span id="adminNameDisplay"></span>
         </h2>
+        
         <div class="menu-item active" onclick="nav('live-orders')"><i class="fas fa-bell"></i> الطلبات الحية</div>
         <div class="menu-item" onclick="nav('dashboard')"><i class="fas fa-chart-line"></i> السجل والإحصائيات</div>
         <div class="menu-item" onclick="nav('group-chat-section')">
@@ -166,7 +186,7 @@
         </div>
 
         <!-- منطقة الضحك والترويق -->
-        <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; padding-top: 10px;">
+        <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 10px; padding-top: 10px;">
             <div class="menu-item" id="bonusBtn" onmouseover="runAway(this)">
                 <i class="fas fa-money-bill-wave"></i> طلب سلفة/مكافأة 💸
             </div>
@@ -181,7 +201,10 @@
             </div>
         </div>
 
-        <div class="menu-item" onclick="logoutStaff()" style="background:var(--red); margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> خروج</div>
+        <!-- زرار الخروج مع مسافة واضحة -->
+        <div class="menu-item" onclick="logoutStaff()" style="background:var(--red); margin-top: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+            <i class="fas fa-sign-out-alt"></i> خروج
+        </div>
     </div>
 
     <div class="main">
@@ -344,7 +367,7 @@
         </div>
     </div>
 
-    <!-- Modal Khasm (Deduction) - NEW -->
+    <!-- Modal Khasm (Deduction) -->
     <div class="modal" id="khasmModal">
         <div class="modal-content">
             <h2 style="color:var(--red); text-align:center;"><i class="fas fa-cut"></i> فرمانات الخصم</h2>
