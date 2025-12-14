@@ -10,7 +10,7 @@
         :root { --blue: #18248b; --red: #8c0104; --white: #ffffff; --green: #27ae60; --gray: #f0f2f5; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; background: var(--gray); height: 100vh; overflow: hidden; }
 
-        /* --- LOADER STYLES (ستايل منكش) --- */
+        /* --- LOADER STYLES --- */
         #loader-wrapper {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; z-index: 99999;
@@ -34,7 +34,6 @@
             animation: shake 2s infinite;
         }
         
-        /* انميشن منكش (Glitch/Shake) */
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes glitch { 
             0% { transform: translate(0) } 
@@ -108,6 +107,19 @@
         .clickable-row { cursor: pointer; transition: background 0.2s; }
         .clickable-row:hover { background-color: #f1f1f1; }
         .reason-box { background: #ffebee; color: #b71c1c; padding: 15px; margin: 15px 0; border-radius: 5px; border: 1px solid #ffcdd2; }
+
+        /* --- تأثيرات الفرفشة --- */
+        @keyframes shakeScreen {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1px); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0); }
+        }
+        .shake-it { animation: shakeScreen 0.5s; }
     </style>
 </head>
 <body>
@@ -123,6 +135,20 @@
 
     <audio id="alarmSound" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" loop></audio>
     <audio id="msgSound" src="https://assets.mixkit.co/active_storage/sfx/2346/2346-preview.mp3"></audio>
+
+    <!-- شاشة المدير وصل (Excel وهمي) -->
+    <div id="fakeExcel" onclick="this.style.display='none'" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:99999; padding:20px; font-family:Arial, sans-serif; color:black; direction:ltr;">
+        <h3 style="color:#217346; border-bottom:2px solid #217346;">Microsoft Excel - Monthly_Report.xlsx</h3>
+        <table border="1" style="width:100%; border-collapse:collapse; border-color:#ddd; font-size:12px;">
+            <tr style="background:#f3f3f3;"><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+            <tr><td>EXPENSES</td><td>20,000</td><td>PENDING</td><td>Q3</td><td>APPROVED</td></tr>
+            <tr><td>TAXES</td><td>5,400</td><td>PAID</td><td>Q3</td><td>APPROVED</td></tr>
+            <tr><td>LOGISTICS</td><td>12,200</td><td>REVIEW</td><td>Q3</td><td>PENDING</td></tr>
+            <tr><td>SALARIES</td><td>50,000</td><td>SENT</td><td>Q3</td><td>CONFIRMED</td></tr>
+            <tr><td>NET INCOME</td><td>99,999</td><td>CALCULATING...</td><td>Q3</td><td>WAITING</td></tr>
+        </table>
+        <p style="margin-top:20px; color:gray; font-size:10px;">Click anywhere to return to Nagaf System...</p>
+    </div>
 
     <div id="loginScreen">
         <h1>بوابة الموظفين - نجف</h1>
@@ -152,7 +178,18 @@
             <i class="fas fa-comments"></i> الشات 
             <span class="notification-dot" id="chatNotifyDot"></span>
         </div>
-        <div class="menu-item" onclick="logoutStaff()" style="margin-top:auto; background:var(--red);"><i class="fas fa-sign-out-alt"></i> خروج</div>
+
+        <!-- منطقة الفرفشة -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; padding-top: 10px;">
+            <div class="menu-item" onclick="bossMode()">
+                <i class="fas fa-user-secret"></i> المدير وصل! 🏃‍♂️
+            </div>
+            <div class="menu-item" onclick="slapEffect()">
+                <i class="fas fa-hand-paper"></i> طلع غلك هنا 😡
+            </div>
+        </div>
+
+        <div class="menu-item" onclick="logoutStaff()" style="background:var(--red); margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> خروج</div>
     </div>
 
     <div class="main">
@@ -323,9 +360,25 @@
         let chatsLoaded = false;
         let editingUserKey = null;
 
+        // --- 1. كود الألقاب المضحكة ---
+        const funnyTitles = [
+            "يا وحش الكون", "يا مدمر الأسعار", "يا مسيطر ع المنطقة", 
+            "يا وزير السعادة", "باشا مصر", "يا مخلص الطلبات",
+            "يا نجم الجيل", "صاحب المفاتيح", "الكبير أوي", "ملك الشغلانة"
+        ];
+
+        function setFunnyName() {
+            if(!currentUser) return;
+            const randomTitle = funnyTitles[Math.floor(Math.random() * funnyTitles.length)];
+            document.getElementById('adminNameDisplay').innerHTML = `
+                <div style="font-size:0.8rem; color:#ffcccb; margin-bottom:5px;">${randomTitle}</div>
+                ${currentUser.name}
+            `;
+        }
+
         if(currentUser) {
             document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('adminNameDisplay').innerText = currentUser.name;
+            setFunnyName();
             updateUIByRole();
             startSystem();
         }
@@ -337,19 +390,46 @@
             onValue(ref(db, 'users'), (snap) => {
                 let found = null;
                 const users = snap.val() || {};
-                if(u === 'admin' && p === '123') found = {name: 'Admin', role: 'admin'};
+                
+                // --- تغيير الباسورد هنا (2002) ---
+                if(u === 'admin' && p === '2002') found = {name: 'Admin', role: 'admin'};
                 else Object.values(users).forEach(user => { if(user.name === u && user.pass === p) found = user; });
                 
                 if(found) {
                     currentUser = found;
                     localStorage.setItem('nagaf_staff_user', JSON.stringify(found));
                     document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('adminNameDisplay').innerText = found.name;
+                    setFunnyName();
                     updateUIByRole();
                     startSystem();
                 } else alert('خطأ في البيانات');
             }, {onlyOnce: true});
         });
+
+        // --- 2. كود المدير وصل (Panic Mode) ---
+        window.bossMode = function() {
+            document.getElementById('fakeExcel').style.display = 'block';
+            document.getElementById('alarmSound').pause();
+        }
+
+        // --- 3. كود تنفيس الغضب (Sound Effect) ---
+        // رابط صوت صفعة كوميدي
+        const slapAudio = new Audio('https://www.myinstants.com/media/sounds/slap.mp3'); 
+        window.slapEffect = function() {
+            slapAudio.currentTime = 0;
+            slapAudio.play().catch(e => console.log(e));
+            document.body.classList.add('shake-it');
+            setTimeout(() => { document.body.classList.remove('shake-it'); }, 500);
+            
+            const angerMsgs = ["خد دي!", "أحسن يستاهل!", "متتعصبش يا وحش", "حاسس بيك والله", "فش غلك كمان", "اضرب كمان عايز أتوب"];
+            // عرض رسالة صغيرة عشوائية (Toast) بدل alert عشان ميعطلش الدنيا
+            const msg = angerMsgs[Math.floor(Math.random() * angerMsgs.length)];
+            const t = document.createElement('div');
+            t.style.cssText = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:black; color:white; padding:10px 20px; border-radius:5px; z-index:9999;";
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
 
         function updateUIByRole() {
             if(currentUser.role === 'receiver') {
