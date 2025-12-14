@@ -54,8 +54,7 @@
             display: flex;
             flex-direction: column;
             height: 75vh;
-            background: #e5ddd5; /* WhatsApp BG Color */
-            /* نقشة خفيفة للخلفية */
+            background: #e5ddd5;
             background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
             border-radius: 15px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.2);
@@ -72,7 +71,6 @@
             gap: 10px;
         }
 
-        /* Bubble Styles */
         .team-msg {
             padding: 10px 15px;
             border-radius: 15px;
@@ -85,7 +83,7 @@
         }
 
         .team-msg.mine {
-            background: #dcf8c6; /* Green Bubble */
+            background: #dcf8c6;
             align-self: flex-end;
             border-bottom-left-radius: 15px;
             border-bottom-right-radius: 0;
@@ -97,7 +95,7 @@
         }
 
         .team-msg.others {
-            background: white; /* White Bubble */
+            background: white;
             align-self: flex-start;
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 15px;
@@ -111,7 +109,6 @@
         .msg-sender { font-size: 0.75rem; font-weight: bold; color: #e67e22; margin-bottom: 4px; display: block; }
         .msg-time { font-size: 0.65rem; color: #999; text-align: left; margin-top: 5px; display: block; }
 
-        /* Input Area */
         .chat-input-area {
             background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd;
         }
@@ -122,7 +119,6 @@
         }
         .chat-input-area button:hover { transform: scale(1.1); }
 
-        /* Stickers Panel */
         .stickers-panel {
             height: 0; background: white; transition: 0.3s; overflow: hidden; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 0 10px;
         }
@@ -132,7 +128,7 @@
         .sticker-item:hover { transform: scale(1.05); background: #ddd; }
         .sticker-msg-img { max-width: 150px; border-radius: 10px; }
 
-        /* Shake Animation for Buzz */
+        /* Shake Animation */
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); }
             20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); }
@@ -142,6 +138,178 @@
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
         .shake-screen { animation: shake 0.5s; animation-iteration-count: 1; }
+
+
+        /* ========================================= */
+        /*        CUSTOMER CHAT IMPROVED STYLES      */
+        /* ========================================= */
+        .chat-layout {
+            display: flex;
+            height: 75vh;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid #d1d7db;
+        }
+
+        /* Sidebar (Chat List) */
+        .chat-list {
+            width: 300px;
+            background: #fff;
+            border-left: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-list-header {
+            padding: 15px;
+            background: #f0f2f5;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: bold;
+            color: #54656f;
+        }
+
+        .chat-users-scroll {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-user-item {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f0f2f5;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .chat-user-item:hover { background: #f5f6f6; }
+        .chat-user-item.active { background: #e3f2fd; }
+
+        .chat-avatar {
+            width: 45px; height: 45px;
+            background: #dfe6e9; color: #636e72;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .chat-info { flex: 1; overflow: hidden; }
+        .chat-name { font-weight: bold; font-size: 0.95rem; margin-bottom: 3px; color: #111b21; }
+        .chat-preview { font-size: 0.8rem; color: #667781; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .unread-dot {
+            width: 10px; height: 10px;
+            background: var(--green);
+            border-radius: 50%;
+            position: absolute;
+            left: 15px; top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 5px var(--green);
+            display: none;
+        }
+        .chat-user-item.has-new .unread-dot { display: block; }
+        .chat-user-item.has-new .chat-preview { color: var(--green); font-weight: bold; }
+
+        /* Main Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #efeae2; /* WhatsApp BG */
+            background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 10px 20px;
+            background: #f0f2f5;
+            border-bottom: 1px solid #d1d7db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: 60px;
+        }
+
+        .chat-messages-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Chat Bubbles */
+        .msg-bubble {
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 70%;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .msg-me {
+            background: #d9fdd3; /* Light Green */
+            color: #111b21;
+            align-self: flex-end;
+            border-top-left-radius: 8px;
+        }
+        .msg-me::after { /* Tail */
+            content: ""; position: absolute; top: 0; left: -8px; width: 0; height: 0;
+            border-top: 10px solid #d9fdd3; border-left: 10px solid transparent; 
+        }
+
+        .msg-other {
+            background: #ffffff;
+            color: #111b21;
+            align-self: flex-start;
+            border-top-right-radius: 8px;
+        }
+        .msg-other::after { /* Tail */
+            content: ""; position: absolute; top: 0; right: -8px; width: 0; height: 0;
+            border-top: 10px solid #ffffff; border-right: 10px solid transparent; 
+        }
+
+        .msg-meta-time {
+            font-size: 0.65rem;
+            color: #667781;
+            float: left;
+            margin-right: -5px;
+            margin-top: 5px;
+            margin-left: 10px;
+        }
+
+        /* Input Area */
+        .chat-footer {
+            padding: 10px 15px;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-footer input {
+            margin: 0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #fff;
+            flex: 1;
+            outline: none;
+        }
+        .chat-footer input:focus { border-color: #ccc; }
+
+        .btn-send-icon {
+            background: transparent; color: #54656f;
+            border: none; font-size: 1.2rem; cursor: pointer;
+            padding: 8px; transition: 0.2s;
+        }
+        .btn-send-icon:hover { color: var(--blue); transform: scale(1.1); }
 
         /* ========================================= */
 
@@ -153,14 +321,6 @@
         .dash-container { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
         .dash-card { flex: 1; min-width: 150px; background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .stat-val { font-size: 2rem; font-weight: bold; color: var(--blue); }
-        
-        /* Customer Chat */
-        .chat-layout { display: flex; height: 70vh; gap: 20px; }
-        .chat-list { width: 250px; background: white; overflow-y: auto; border: 1px solid #ddd; }
-        .chat-area { flex: 1; background: white; display: flex; flex-direction: column; border: 1px solid #ddd; }
-        .chat-user-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; }
-        .chat-user-item:hover { background: #f1f1f1; }
-        .chat-user-item.has-new { background: #e3f2fd; font-weight: bold; border-right: 4px solid var(--red); }
         
         .status-dot { height: 10px; width: 10px; background-color: #bbb; border-radius: 50%; display: inline-block; margin-left: 5px; }
         .status-dot.online { background-color: #27ae60; box-shadow: 0 0 5px #27ae60; }
@@ -359,16 +519,51 @@
             <table class="users-table"><thead><tr><th>الاسم والحالة</th><th>الصلاحية</th><th>إجراءات</th></tr></thead><tbody id="usersListBody"></tbody></table>
         </div>
 
-        <!-- 7. Customer Chat -->
+        <!-- 7. Customer Chat (IMPROVED) -->
         <div id="chat" class="section">
             <div class="chat-layout">
-                <div class="chat-list" id="chatUsersList"></div>
+                <!-- القائمة الجانبية -->
+                <div class="chat-list">
+                    <div class="chat-list-header">
+                        <i class="fas fa-comments"></i> الرسائل الواردة
+                    </div>
+                    <div id="chatUsersList" class="chat-users-scroll">
+                        <!-- سيتم ملء القائمة بالجافاسكربت -->
+                    </div>
+                </div>
+
+                <!-- منطقة المحادثة -->
                 <div class="chat-area">
-                    <div style="flex:1; padding:20px; overflow-y:auto;" id="adminChatBox"></div>
-                    <div style="padding:10px; display:flex;"><input id="adminChatInput" style="flex:1;"><button class="btn-blue" onclick="sendAdminMsg()">إرسال</button></div>
+                    <!-- رأس المحادثة -->
+                    <div class="chat-header" id="chatHeaderArea" style="display:none;">
+                        <div class="chat-avatar" style="background:var(--blue); color:white;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name" id="currentChatUser">اسم العميل</div>
+                            <div style="font-size:0.75rem; color:green;">● متصل الآن</div>
+                        </div>
+                    </div>
+
+                    <!-- الرسائل -->
+                    <div id="adminChatBox" class="chat-messages-box">
+                        <div style="text-align:center; margin-top:50px; color:#888;">
+                            <i class="fas fa-paper-plane" style="font-size:3rem; margin-bottom:10px; opacity:0.3;"></i>
+                            <br>اختر محادثة للبدء
+                        </div>
+                    </div>
+
+                    <!-- مربع الكتابة -->
+                    <div class="chat-footer" id="chatInputArea" style="display:none;">
+                        <input type="text" id="adminChatInput" placeholder="اكتب رسالة للعميل..." onkeypress="handleAdminChatEnter(event)">
+                        <button class="btn-send-icon" onclick="sendAdminMsg()">
+                            <i class="fas fa-paper-plane" style="transform: rotate(180deg);"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- Modal Order Details -->
@@ -860,18 +1055,102 @@
             }
         }
 
+        // ===========================================
+        //          UPDATED CHAT JS FUNCTIONS
+        // ===========================================
+
+        // 1. عرض قائمة العملاء
         function renderChatList(d) {
-            document.getElementById('chatUsersList').innerHTML = Object.keys(d).map(k => {
-                const msgs = Object.values(d[k]); const last = msgs[msgs.length-1]; 
-                const isNew = last.sender === 'customer' ? 'has-new' : '';
-                return `<div class="chat-user-item ${isNew}" onclick="window.loadChat('${k}')">
-                    <span>${k}</span> 
-                    <small style="color:#666">${last.text.substring(0,10)}...</small>
-                </div>`;
-            }).join('');
+            const listContainer = document.getElementById('chatUsersList');
+            listContainer.innerHTML = '';
+
+            // تحويل الكائن لمصفوفة وترتيبها حسب أحدث رسالة
+            const sortedChats = Object.entries(d).sort((a, b) => {
+                const lastA = Object.values(a[1]).pop();
+                const lastB = Object.values(b[1]).pop();
+                return (lastB?.timestamp || 0) - (lastA?.timestamp || 0);
+            });
+
+            sortedChats.forEach(([phone, msgs]) => {
+                const lastMsg = Object.values(msgs).pop();
+                const isNew = lastMsg.sender === 'customer';
+                const msgText = lastMsg.text.length > 25 ? lastMsg.text.substring(0, 25) + '...' : lastMsg.text;
+                const time = new Date(lastMsg.timestamp).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+                const isActive = activeChatUser === phone ? 'active' : '';
+
+                listContainer.innerHTML += `
+                    <div class="chat-user-item ${isActive} ${isNew ? 'has-new' : ''}" onclick="window.loadChat('${phone}')">
+                        <div class="chat-avatar"><i class="fas fa-user"></i></div>
+                        <div class="chat-info">
+                            <div class="chat-name">${phone}</div>
+                            <div class="chat-preview">
+                                ${isNew ? '<i class="fas fa-circle" style="font-size:0.5rem; margin-left:3px;"></i>' : ''}
+                                ${lastMsg.sender === 'admin' ? '<i class="fas fa-check-double" style="font-size:0.7rem;"></i> ' : ''}
+                                ${msgText}
+                            </div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                            <span style="font-size:0.7rem; color:#999;">${time}</span>
+                            <span class="unread-dot"></span>
+                        </div>
+                    </div>`;
+            });
         }
-        window.loadChat = (p) => { activeChatUser = p; onValue(ref(db,'chats/'+p), s => { document.getElementById('adminChatBox').innerHTML = Object.values(s.val()||{}).map(m=>`<div style="background:${m.sender==='admin'?'var(--blue)':'#ddd'};color:${m.sender==='admin'?'white':'black'};padding:8px;margin:5px;width:fit-content;border-radius:5px;align-self:${m.sender==='admin'?'flex-end':'flex-start'}">${m.text}</div>`).join(''); }); }
-        window.sendAdminMsg = () => { let t=document.getElementById('adminChatInput').value; if(t&&activeChatUser){ push(ref(db,'chats/'+activeChatUser),{sender:'admin',text:t, timestamp:Date.now()}); document.getElementById('adminChatInput').value=''; } };
+
+        // 2. تحميل محادثة معينة
+        window.loadChat = function(phone) {
+            activeChatUser = phone;
+            
+            // إظهار الهيدر والإنبوت
+            document.getElementById('chatHeaderArea').style.display = 'flex';
+            document.getElementById('chatInputArea').style.display = 'flex';
+            document.getElementById('currentChatUser').innerText = phone;
+            
+            // إعادة رسم القائمة لتحديث حالة الـ active
+            onValue(ref(db, 'chats'), (s) => renderChatList(s.val() || {}), {onlyOnce:true});
+
+            // جلب الرسائل
+            onValue(ref(db, 'chats/' + phone), (snapshot) => {
+                const msgs = snapshot.val() || {};
+                const chatBox = document.getElementById('adminChatBox');
+                chatBox.innerHTML = '';
+
+                Object.values(msgs).forEach(m => {
+                    const isMe = m.sender === 'admin';
+                    const time = new Date(m.timestamp).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+                    
+                    chatBox.innerHTML += `
+                        <div class="msg-bubble ${isMe ? 'msg-me' : 'msg-other'}">
+                            ${m.text}
+                            <span class="msg-meta-time">${time}</span>
+                        </div>
+                    `;
+                });
+
+                // النزول لأسفل الشات تلقائياً
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        // 3. إرسال الرسالة
+        window.sendAdminMsg = function() {
+            const inp = document.getElementById('adminChatInput');
+            const txt = inp.value.trim();
+            if (txt && activeChatUser) {
+                push(ref(db, 'chats/' + activeChatUser), {
+                    sender: 'admin',
+                    text: txt,
+                    timestamp: Date.now()
+                });
+                inp.value = '';
+                document.getElementById('msgSound').play().catch(()=>{}); // صوت عند الإرسال
+            }
+        }
+
+        // دالة لزر الإنتر
+        window.handleAdminChatEnter = function(e) {
+            if(e.key === 'Enter') window.sendAdminMsg();
+        }
 
         document.getElementById('addCatBtn').addEventListener('click', () => { 
             let n=document.getElementById('catMain').value; 
