@@ -36,10 +36,16 @@
         .btn-red { background: #b71c1c; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .btn-warning { background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 5px; }
 
-        /* Order Cards */
+        /* Order Cards - Special Styles for Cancel Requests */
         .order-card { background: white; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 5px solid var(--blue); cursor: pointer; position: relative; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .order-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .cancel-requested { border-left-color: orange !important; background-color: #fff8e1; animation: flashOrange 1.5s infinite alternate; }
+        
+        /* هذا الجزء يخص تمييز طلب الإلغاء */
+        .cancel-requested { 
+            border-left-color: orange !important; 
+            background-color: #fff8e1; 
+            animation: flashOrange 1.5s infinite alternate; 
+        }
         @keyframes flashOrange { from { box-shadow: 0 0 5px orange; } to { box-shadow: 0 0 15px orange; } }
         .cancel-badge { background: var(--red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; position: absolute; top: 10px; left: 10px; z-index: 10; }
 
@@ -87,8 +93,6 @@
         </h2>
         <div class="menu-item active" onclick="nav('live-orders')"><i class="fas fa-bell"></i> الطلبات الحية</div>
         <div class="menu-item" onclick="nav('dashboard')"><i class="fas fa-chart-line"></i> السجل والإحصائيات</div>
-        
-        <!-- تم نقل إدارة المنتجات هنا لتظهر للمتلقي أيضاً -->
         <div class="menu-item" onclick="nav('manage-products')"><i class="fas fa-boxes"></i> إدارة المنتجات</div>
         
         <div class="admin-only">
@@ -105,8 +109,6 @@
     </div>
 
     <div class="main">
-
-        <!-- 1. Live Orders -->
         <div id="live-orders" class="section active">
             <h3>متابعة الطلبات (Live)</h3>
             <div style="display: flex; gap: 20px; height: 70vh;">
@@ -121,7 +123,6 @@
             </div>
         </div>
 
-        <!-- 2. Dashboard -->
         <div id="dashboard" class="section">
             <h3 id="dashTitle">سجل الطلبات</h3>
             <div class="form-box" style="padding:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
@@ -150,7 +151,6 @@
             </table>
         </div>
 
-        <!-- 3. Reports -->
         <div id="reports" class="section">
             <div class="form-box">
                 <h3>استخراج التقارير</h3>
@@ -164,7 +164,6 @@
             </div>
         </div>
 
-        <!-- 4. Products -->
         <div id="products" class="section">
             <div class="form-box">
                 <h3>إضافة منتج/عرض</h3>
@@ -183,30 +182,10 @@
                 </div>
                 <button class="btn-blue" style="width:100%" id="saveProdBtn">حفظ</button>
             </div>
-
-            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                <!-- إضافة تصنيف -->
-                <div class="form-box" style="flex: 1;">
-                    <h3>إضافة تصنيف</h3>
-                    <input type="text" id="catMain" placeholder="اسم التصنيف">
-                    <button class="btn-blue" id="addCatBtn">إضافة</button>
-                </div>
-
-                <!-- إدارة التصنيفات (القسم الجديد) -->
-                <div class="form-box" style="flex: 1;">
-                    <h3>إدارة التصنيفات الحالية</h3>
-                    <table class="users-table">
-                        <thead>
-                            <tr>
-                                <th>اسم التصنيف</th>
-                                <th>إجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="manageCatsList">
-                            <!-- سيتم تعبئة الجدول تلقائياً -->
-                        </tbody>
-                    </table>
-                </div>
+            <div class="form-box">
+                <h3>إضافة تصنيف</h3>
+                <input type="text" id="catMain" placeholder="اسم التصنيف">
+                <button class="btn-blue" id="addCatBtn">إضافة</button>
             </div>
         </div>
 
@@ -215,7 +194,6 @@
             <table class="users-table"><thead><tr><th>المنتج</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="manageProdList"></tbody></table>
         </div>
 
-        <!-- 5. Users -->
         <div id="users" class="section">
             <div class="form-box">
                 <h3>إضافة موظف جديد</h3>
@@ -228,7 +206,6 @@
             <table class="users-table"><thead><tr><th>إجراءات</th><th>الصلاحية</th><th>الاسم</th></tr></thead><tbody id="usersListBody"></tbody></table>
         </div>
 
-        <!-- 6. Chat -->
         <div id="chat" class="section">
             <div class="chat-layout">
                 <div class="chat-list" id="chatUsersList"></div>
@@ -240,21 +217,23 @@
         </div>
     </div>
 
-    <!-- Modal Order Details -->
+    <!-- Modal Order Details (Updated for Cancellation) -->
     <div class="modal" id="orderModal">
         <div class="modal-content">
             <h2 style="color:var(--blue); text-align:center;">تفاصيل الطلب</h2>
             <div id="modalBody"></div>
+            
+            <!-- تنبيه طلب الإلغاء -->
             <div id="cancelAlert" style="display:none; background:#fff3cd; color:#856404; padding:15px; margin:10px 0; border:1px solid #ffeeba; border-radius:5px;">
                 <strong><i class="fas fa-exclamation-triangle"></i> تنبيه:</strong> العميل يطلب إلغاء هذا الأوردر!
                 <div style="margin-top:5px;"><strong>السبب:</strong> <span id="cancelReasonText"></span></div>
             </div>
+
             <div id="modalActions" style="display:flex; justify-content:center; gap:10px; margin-top:20px;"></div>
             <button onclick="document.getElementById('orderModal').style.display='none'" style="width:100%; margin-top:10px; background:#ccc; color:black;">إغلاق</button>
         </div>
     </div>
 
-    <!-- Modal User Edit -->
     <div class="modal" id="userEditModal">
         <div class="modal-content">
             <h2 style="color:var(--blue); text-align:center;">تعديل بيانات الموظف</h2>
@@ -280,7 +259,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- Load user from Storage immediately ---
         let currentUser = JSON.parse(localStorage.getItem('nagaf_staff_user'));
         let activeChatUser = null;
         let tempVariants = [];
@@ -292,17 +270,10 @@
         if(currentUser) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminNameDisplay').innerText = currentUser.name;
-            if(currentUser.role === 'receiver') {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-                document.getElementById('adminStatsBar').style.display = 'none';
-            } else {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-                document.getElementById('adminStatsBar').style.display = 'flex';
-            }
+            updateUIByRole();
             startSystem();
         }
 
-        // Login
         document.getElementById('loginBtn').addEventListener('click', () => {
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
@@ -316,22 +287,24 @@
                 if(found) {
                     currentUser = found;
                     localStorage.setItem('nagaf_staff_user', JSON.stringify(found));
-
                     document.getElementById('loginScreen').style.display = 'none';
                     document.getElementById('adminNameDisplay').innerText = found.name;
-                    if(found.role === 'receiver') {
-                        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-                        document.getElementById('adminStatsBar').style.display = 'none';
-                    } else {
-                        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-                        document.getElementById('adminStatsBar').style.display = 'flex';
-                    }
+                    updateUIByRole();
                     startSystem();
                 } else alert('خطأ في البيانات');
             }, {onlyOnce: true});
         });
 
-        // Logout
+        function updateUIByRole() {
+            if(currentUser.role === 'receiver') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+                document.getElementById('adminStatsBar').style.display = 'none';
+            } else {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+                document.getElementById('adminStatsBar').style.display = 'flex';
+            }
+        }
+
         window.logoutStaff = function() {
             localStorage.removeItem('nagaf_staff_user');
             location.reload();
@@ -342,42 +315,28 @@
             document.getElementById(id).classList.add('active');
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            if(id === 'chat') {
-                document.getElementById('chatNotifyDot').style.display = 'none';
-            }
+            if(id === 'chat') document.getElementById('chatNotifyDot').style.display = 'none';
         }
 
         function startSystem() {
-            onValue(ref(db, 'orders'), (s) => { 
-                allOrders = s.val() || {}; 
-                renderOrders(allOrders); 
-                updateStats(allOrders); 
-            });
-            onValue(ref(db, 'users'), (s) => {
-                allUsersData = s.val() || {};
-                renderUsers(allUsersData);
-            });
+            onValue(ref(db, 'orders'), (s) => { allOrders = s.val() || {}; renderOrders(allOrders); updateStats(allOrders); });
+            onValue(ref(db, 'users'), (s) => { allUsersData = s.val() || {}; renderUsers(allUsersData); });
             onValue(ref(db, 'products'), (s) => renderProdManage(s.val() || {}));
-            
-            // --- تعديل: قراءة التصنيفات للملء وللإدارة ---
-            onValue(ref(db, 'categories'), (s) => {
-                const cats = s.val() || {};
-                populateCats(cats);      // يملأ القائمة المنسدلة
-                renderCatManage(cats);   // يملأ جدول الإدارة (للحذف والتعديل)
-            });
-
+            onValue(ref(db, 'categories'), (s) => populateCats(s.val() || {}));
             onValue(ref(db, 'chats'), (s) => handleChatUpdate(s.val() || {}));
         }
 
-        // --- Orders Logic ---
         function renderOrders(data) {
             const n = document.getElementById('newOrdersList'), p = document.getElementById('processingOrdersList');
             n.innerHTML = ''; p.innerHTML = '';
             let hasNewOrder = false;
 
             Object.entries(data).forEach(([k,o]) => {
-                const c = `<div class="order-card ${o.cancelRequest?'cancel-requested':''}" onclick="openOrder('${k}')">
-                    ${o.cancelRequest ? '<span class="cancel-badge">طلب إلغاء!</span>' : ''}
+                const isCancelReq = o.cancelRequest ? 'cancel-requested' : '';
+                const badge = o.cancelRequest ? '<span class="cancel-badge">طلب إلغاء!</span>' : '';
+
+                const c = `<div class="order-card ${isCancelReq}" onclick="openOrder('${k}')">
+                    ${badge}
                     <h4>#${k.slice(-4)} - ${o.customerName}</h4>
                     <div>${o.phone}</div>
                     <div>${o.address}</div>
@@ -390,35 +349,20 @@
             });
 
             const alarm = document.getElementById('alarmSound');
-            if(hasNewOrder) {
-                alarm.currentTime = 0;
-                alarm.play().catch(()=>{});
-            }
+            if(hasNewOrder) { alarm.currentTime = 0; alarm.play().catch(()=>{}); }
         }
 
-        window.filterHistory = function() {
-            updateStats(allOrders);
-        }
+        window.filterHistory = function() { updateStats(allOrders); }
 
         window.openOrder = function(k) {
             const alarm = document.getElementById('alarmSound');
-            alarm.pause();
-            alarm.currentTime = 0;
+            alarm.pause(); alarm.currentTime = 0;
 
             const o = allOrders[k]; if(!o) return;
             
             const items = (o.items || o.cart || []).map(i => {
-                let noteHtml = '';
-                if(i.note && i.note.trim() !== '') {
-                    noteHtml = `<span class="item-note">⚠️ ${i.note}</span>`;
-                }
-                return `<li>
-                    <div style="margin-bottom:5px;">
-                        ${i.name} ${i.variant ? `(${i.variant.bread} ${i.variant.size != 'موحد' ? '- ' + i.variant.size : ''})` : ''} 
-                        - <strong>${i.variant ? i.variant.price : i.price} ج</strong>
-                    </div>
-                    ${noteHtml}
-                </li>`;
+                let noteHtml = i.note && i.note.trim() !== '' ? `<span class="item-note">⚠️ ${i.note}</span>` : '';
+                return `<li><div style="margin-bottom:5px;">${i.name} ${i.variant ? `(${i.variant.bread} ${i.variant.size != 'موحد' ? '- ' + i.variant.size : ''})` : ''} - <strong>${i.variant ? i.variant.price : i.price} ج</strong></div>${noteHtml}</li>`;
             }).join('');
             
             let extraInfo = '';
@@ -435,14 +379,30 @@
 
             if(o.cancelRequest) {
                 alertBox.style.display = 'block';
-                document.getElementById('cancelReasonText').innerText = o.cancelReason;
-                act.innerHTML = `<button class="btn-red" onclick="rejectOrder('${k}')">✔ موافقة على الإلغاء</button><button class="btn-blue" onclick="rejCancelReq('${k}')">✖ رفض (استكمال الطلب)</button>`;
+                document.getElementById('cancelReasonText').innerText = o.cancelReason || "غير محدد";
+                act.innerHTML = `
+                    <button class="btn-red" onclick="acceptCancelReq('${k}')">✔ موافقة على الإلغاء</button>
+                    <button class="btn-blue" onclick="rejectCancelReq('${k}')">✖ رفض (استكمال الطلب)</button>`;
             } else {
                 alertBox.style.display = 'none';
                 if(o.status==='pending'||o.status==='new') act.innerHTML = `<button class="btn-blue" style="background:var(--green)" onclick="upStatus('${k}','processing')">قبول وتجهيز</button><button class="btn-red" onclick="rejectOrder('${k}')">رفض</button>`;
                 else if(o.status==='processing') act.innerHTML = `<button class="btn-blue" onclick="upStatus('${k}','completed')">إنهاء</button>`;
             }
             document.getElementById('orderModal').style.display = 'block';
+        }
+
+        window.acceptCancelReq = function(k) {
+            if(confirm("هل توافق على إلغاء هذا الطلب بناءً على رغبة العميل؟")) {
+                update(ref(db, 'orders/'+k), { status: 'cancelled', cancelRequest: false, adminReason: 'تمت الموافقة على طلب العميل بالإلغاء', handledBy: currentUser.name });
+                document.getElementById('orderModal').style.display = 'none';
+            }
+        }
+
+        window.rejectCancelReq = function(k) {
+            if(confirm("هل تريد رفض الإلغاء وإجبار استكمال الطلب؟")) {
+                update(ref(db, 'orders/'+k), { cancelRequest: false });
+                document.getElementById('orderModal').style.display = 'none';
+            }
         }
 
         window.upStatus = (k,s) => { update(ref(db,'orders/'+k), {status:s, handledBy:currentUser.name}); document.getElementById('orderModal').style.display='none'; }
@@ -453,30 +413,22 @@
                 document.getElementById('orderModal').style.display = 'none';
             }
         }
-        window.rejCancelReq = (k) => { update(ref(db,'orders/'+k), {cancelRequest:false}); document.getElementById('orderModal').style.display='none'; }
 
         function updateStats(data) {
             let list = Object.entries(data).map(([k,v]) => ({...v, key: k})).reverse();
-            
             if(document.getElementById('adminStatsBar').style.display !== 'none') {
                 let comp = list.filter(o => o.status === 'completed');
-                let totalSales = comp.reduce((s,o) => s + (parseInt(o.total)||0), 0);
-                let cancelledCount = list.filter(o => o.status === 'cancelled').length;
-                document.getElementById('todaySales').innerText = totalSales + ' ج';
+                document.getElementById('todaySales').innerText = comp.reduce((s,o) => s + (parseInt(o.total)||0), 0) + ' ج';
                 document.getElementById('totalCount').innerText = list.length; 
-                document.getElementById('cancelledCount').innerText = cancelledCount; 
+                document.getElementById('cancelledCount').innerText = list.filter(o => o.status === 'cancelled').length; 
             }
-
             const term = document.getElementById('searchPhoneInput').value;
             const statusFilter = document.getElementById('filterStatus').value;
-
             if(term) list = list.filter(o => o.phone.includes(term));
-            
             if(statusFilter !== 'all') {
                 if(statusFilter === 'processing') list = list.filter(o => o.status === 'pending' || o.status === 'new' || o.status === 'processing');
                 else list = list.filter(o => o.status === statusFilter);
             }
-
             document.getElementById('historyTableBody').innerHTML = list.map(o => `
                 <tr class="clickable-row" onclick="openOrder('${o.key}')">
                     <td>#${o.key.slice(-4)}</td>
@@ -489,110 +441,59 @@
                 </tr>`).join('');
         }
 
-        // --- Reports Logic ---
         window.generateReport = function() {
-            const m = document.getElementById('reportMonthInput').value; // yyyy-mm
+            const m = document.getElementById('reportMonthInput').value;
             if(!m) return alert("الرجاء اختيار الشهر أولاً");
-
             const [year, month] = m.split('-');
             const reportData = {};
-
             Object.values(allOrders).forEach(o => {
                 if(o.status === 'completed') {
                     const d = new Date(o.timestamp);
                     if(d.getFullYear() == year && (d.getMonth() + 1) == month) {
                         const emp = o.handledBy || 'غير محدد';
                         if(!reportData[emp]) reportData[emp] = { count: 0, total: 0 };
-                        
                         reportData[emp].count += 1;
                         reportData[emp].total += (parseInt(o.total) || 0);
                     }
                 }
             });
-
             document.getElementById('repMonthName').innerText = m;
             document.getElementById('reportResult').style.display = 'block';
-            
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
-            
-            if(Object.keys(reportData).length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3">لا توجد مبيعات في هذا الشهر</td></tr>';
-            } else {
-                Object.entries(reportData).forEach(([name, data]) => {
-                    tbody.innerHTML += `<tr><td>${name}</td><td>${data.count}</td><td>${data.total} ج</td></tr>`;
-                });
-            }
+            if(Object.keys(reportData).length === 0) tbody.innerHTML = '<tr><td colspan="3">لا توجد مبيعات في هذا الشهر</td></tr>';
+            else Object.entries(reportData).forEach(([name, data]) => tbody.innerHTML += `<tr><td>${name}</td><td>${data.count}</td><td>${data.total} ج</td></tr>`);
         }
 
-        // --- User Management ---
         document.getElementById('addUserBtn').addEventListener('click', () => { 
             let u=document.getElementById('newUName').value, p=document.getElementById('newUPass').value, r=document.getElementById('newURole').value; 
             if(u&&p){ push(ref(db,'users'),{name:u,pass:p,role:r}); alert('تمت الإضافة'); document.getElementById('newUName').value=''; document.getElementById('newUPass').value=''; }
         });
-
         function renderUsers(data) { 
-            const t=document.getElementById('usersListBody'); 
-            t.innerHTML=''; 
-            Object.entries(data).forEach(([k,u])=>{ 
-                if(u.role!=='customer') {
-                    t.innerHTML+=`
-                    <tr>
-                        <td>
-                            <button class="btn-red" onclick="window.delUser('${k}')">حذف</button>
-                            <button class="btn-warning" onclick="window.openEditUser('${k}')">تعديل</button>
-                        </td>
-                        <td>${u.role==='admin'?'مدير':'متلقي طلبات'}</td>
-                        <td>${u.name}</td>
-                    </tr>`; 
-                }
-            }); 
+            const t=document.getElementById('usersListBody'); t.innerHTML=''; 
+            Object.entries(data).forEach(([k,u])=>{ if(u.role!=='customer') t.innerHTML+=`<tr><td><button class="btn-red" onclick="window.delUser('${k}')">حذف</button><button class="btn-warning" onclick="window.openEditUser('${k}')">تعديل</button></td><td>${u.role==='admin'?'مدير':'متلقي طلبات'}</td><td>${u.name}</td></tr>`; }); 
         }
-
-        window.delUser=(k)=>confirm('هل أنت متأكد من الحذف؟')&&remove(ref(db,'users/'+k));
-
+        window.delUser=(k)=>confirm('حذف؟')&&remove(ref(db,'users/'+k));
         window.openEditUser = function(key) {
-            const u = allUsersData[key];
-            if(!u) return;
-            editingUserKey = key;
-            document.getElementById('editUName').value = u.name;
-            document.getElementById('editUPass').value = u.pass;
-            document.getElementById('editURole').value = u.role;
+            const u = allUsersData[key]; if(!u) return; editingUserKey = key;
+            document.getElementById('editUName').value = u.name; document.getElementById('editUPass').value = u.pass; document.getElementById('editURole').value = u.role;
             document.getElementById('userEditModal').style.display = 'flex';
         }
-
         window.saveUserEdit = function() {
             if(!editingUserKey) return;
-            const n = document.getElementById('editUName').value;
-            const p = document.getElementById('editUPass').value;
-            const r = document.getElementById('editURole').value;
-            
-            if(n && p) {
-                update(ref(db, 'users/' + editingUserKey), { name: n, pass: p, role: r })
-                .then(() => {
-                    alert("تم حفظ التعديلات");
-                    document.getElementById('userEditModal').style.display = 'none';
-                    editingUserKey = null;
-                });
-            } else {
-                alert("يرجى ملء جميع الحقول");
-            }
+            const n=document.getElementById('editUName').value, p=document.getElementById('editUPass').value, r=document.getElementById('editURole').value;
+            if(n && p) { update(ref(db, 'users/' + editingUserKey), { name: n, pass: p, role: r }).then(() => { alert("تم حفظ التعديلات"); document.getElementById('userEditModal').style.display = 'none'; editingUserKey = null; }); }
         }
 
-        // --- Other Management & Chat ---
         function handleChatUpdate(chats) {
             renderChatList(chats);
             if(chatsLoaded) {
                 let hasNew = false;
-                Object.values(chats).forEach(msgs => {
-                    const lastMsg = Object.values(msgs).pop();
-                    if(lastMsg && lastMsg.sender === 'customer' && Date.now() - lastMsg.timestamp < 10000) hasNew = true;
-                });
+                Object.values(chats).forEach(msgs => { const lastMsg = Object.values(msgs).pop(); if(lastMsg && lastMsg.sender === 'customer' && Date.now() - lastMsg.timestamp < 10000) hasNew = true; });
                 if(hasNew) { document.getElementById('msgSound').play().catch(()=>{}); document.getElementById('chatNotifyDot').style.display = 'block'; }
             } else chatsLoaded = true;
             if(activeChatUser) loadAdminChat(activeChatUser);
         }
-
         function renderChatList(d) {
             document.getElementById('chatUsersList').innerHTML = Object.keys(d).map(k => {
                 const msgs = Object.values(d[k]); const last = msgs[msgs.length-1]; const isNew = last.sender === 'customer' ? 'has-new' : '';
@@ -604,52 +505,7 @@
         document.getElementById('addVarBtn').addEventListener('click', () => { let b=document.getElementById('vType').value, s=document.getElementById('vSize').value, p=document.getElementById('vPrice').value; if(b && p) { tempVariants.push({bread:b,size:s||'موحد',price:parseInt(p)}); document.getElementById('tempVarsDisplay').innerHTML += `<span class="variant-tag">${b} (${s||'موحد'}) : ${p}ج</span>`; document.getElementById('vType').value=''; document.getElementById('vSize').value=''; document.getElementById('vPrice').value=''; } });
         document.getElementById('saveProdBtn').addEventListener('click', () => { let n=document.getElementById('prodName').value, i=document.getElementById('prodImg').value, c=document.getElementById('prodCatSelect').value; if(n && tempVariants.length) { push(ref(db,'products'),{name:n,img:i,cat:c,variants:tempVariants,available:true}); alert('تم'); tempVariants=[]; document.getElementById('prodName').value=''; document.getElementById('tempVarsDisplay').innerHTML=''; } });
         document.getElementById('addCatBtn').addEventListener('click', () => { let n=document.getElementById('catMain').value; if(n){ push(ref(db,'categories'),{name:n}); alert('تم'); } });
-        
-        // --- دالة ملء القائمة المنسدلة ---
-        function populateCats(data) { 
-            const s=document.getElementById('prodCatSelect'); 
-            s.innerHTML='<option value="" disabled selected>اختر</option>'; 
-            Object.values(data).forEach(c=>s.innerHTML+=`<option value="${c.name}">${c.name}</option>`); 
-        }
-
-        // --- دوال إدارة التصنيفات الجديدة ---
-        function renderCatManage(data) {
-            const tbody = document.getElementById('manageCatsList');
-            tbody.innerHTML = '';
-            if(!data || Object.keys(data).length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2">لا توجد تصنيفات</td></tr>';
-                return;
-            }
-            Object.entries(data).forEach(([key, cat]) => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${cat.name}</td>
-                        <td>
-                            <button class="btn-warning" onclick="window.editCat('${key}', '${cat.name}')">تعديل</button>
-                            <button class="btn-red" onclick="window.delCat('${key}')">حذف</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        window.delCat = function(key) {
-            if(confirm('هل أنت متأكد من حذف هذا التصنيف؟')) {
-                remove(ref(db, 'categories/' + key))
-                .then(() => alert('تم الحذف'))
-                .catch(err => alert('خطأ: ' + err));
-            }
-        }
-
-        window.editCat = function(key, oldName) {
-            let newName = prompt("اسم التصنيف الجديد:", oldName);
-            if(newName && newName !== oldName) {
-                update(ref(db, 'categories/' + key), { name: newName })
-                .then(() => alert('تم التعديل'))
-                .catch(err => alert('خطأ: ' + err));
-            }
-        }
-
+        function populateCats(data) { const s=document.getElementById('prodCatSelect'); s.innerHTML='<option value="" disabled selected>اختر</option>'; Object.values(data).forEach(c=>s.innerHTML+=`<option value="${c.name}">${c.name}</option>`); }
         function renderProdManage(data) { document.getElementById('manageProdList').innerHTML=Object.entries(data).map(([k,p])=>`<tr><td>${p.name}</td><td>${p.available?'متاح':'مغلق'}</td><td><button class="btn-blue" onclick="window.tog('${k}',${p.available})">تغيير</button><button class="btn-red" onclick="window.delP('${k}')">حذف</button></td></tr>`).join(''); }
         window.tog=(k,s)=>update(ref(db,'products/'+k),{available:!s}); window.delP=(k)=>confirm('حذف؟')&&remove(ref(db,'products/'+k));
     </script>
