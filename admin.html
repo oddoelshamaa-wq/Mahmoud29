@@ -92,6 +92,14 @@
         .clickable-row { cursor: pointer; transition: background 0.2s; }
         .clickable-row:hover { background-color: #f1f1f1; }
         .reason-box { background: #ffebee; color: #b71c1c; padding: 15px; margin: 15px 0; border-radius: 5px; border: 1px solid #ffcdd2; }
+
+        /* --- GAME CSS --- */
+        .game-board { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; margin: 20px auto; width: fit-content; background: var(--blue); padding: 10px; border-radius: 10px; }
+        .game-cell { width: 100px; height: 100px; background: white; font-size: 3rem; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; color: var(--blue); border-radius: 5px; transition: 0.2s; }
+        .game-cell:hover { background: #e3f2fd; }
+        .game-cell.x { color: var(--red); }
+        .game-cell.o { color: var(--blue); }
+        .game-status { text-align: center; font-size: 1.5rem; margin-bottom: 20px; color: var(--blue); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -125,9 +133,11 @@
         </h2>
         <div class="menu-item active" onclick="nav('live-orders')"><i class="fas fa-bell"></i> الطلبات الحية</div>
         <div class="menu-item" onclick="nav('dashboard')"><i class="fas fa-chart-line"></i> السجل والإحصائيات</div>
-        
         <div class="menu-item" onclick="nav('manage-products')"><i class="fas fa-boxes"></i> إدارة المنتجات</div>
         
+        <!-- زر اللعبة الجديد -->
+        <div class="menu-item" onclick="nav('game-section')"><i class="fas fa-gamepad"></i> استراحة (لعبة)</div>
+
         <div class="admin-only">
             <div class="menu-item" onclick="nav('reports')"><i class="fas fa-file-invoice-dollar"></i> التقارير</div>
             <div class="menu-item" onclick="nav('products')"><i class="fas fa-plus-circle"></i> إضافة منتج جديد</div>
@@ -225,8 +235,6 @@
                 <input type="text" id="catMain" placeholder="اسم التصنيف">
                 <button class="btn-blue" id="addCatBtn">إضافة</button>
             </div>
-            
-            <!-- NEW: إدارة التصنيفات (حذف) -->
             <div class="form-box" style="border-top: 4px solid var(--red);">
                 <h3>إدارة التصنيفات (حذف)</h3>
                 <table class="users-table">
@@ -264,6 +272,28 @@
                 </div>
             </div>
         </div>
+
+        <!-- 7. Game Section (New) -->
+        <div id="game-section" class="section">
+            <div class="form-box" style="text-align:center;">
+                <h3>استراحة الموظفين (X - O)</h3>
+                <p>اللعبة دي عشان تفصلوا شوية من ضغط الشغل 😉</p>
+                <div id="gameStatus" class="game-status">الدور على: <span style="color:var(--red)">X</span></div>
+                <div class="game-board" id="gameBoard">
+                    <div class="game-cell" onclick="playGame(0)"></div>
+                    <div class="game-cell" onclick="playGame(1)"></div>
+                    <div class="game-cell" onclick="playGame(2)"></div>
+                    <div class="game-cell" onclick="playGame(3)"></div>
+                    <div class="game-cell" onclick="playGame(4)"></div>
+                    <div class="game-cell" onclick="playGame(5)"></div>
+                    <div class="game-cell" onclick="playGame(6)"></div>
+                    <div class="game-cell" onclick="playGame(7)"></div>
+                    <div class="game-cell" onclick="playGame(8)"></div>
+                </div>
+                <button class="btn-blue" onclick="resetGame()" style="margin-top:20px;">لعبة جديدة</button>
+            </div>
+        </div>
+
     </div>
 
     <!-- Modal Order Details -->
@@ -397,7 +427,7 @@
             });
             onValue(ref(db, 'products'), (s) => renderProdManage(s.val() || {}));
             
-            // تحديث: جلب التصنيفات وتعبئة القائمة + جدول الحذف
+            // تحديث: جلب التصنيفات
             onValue(ref(db, 'categories'), (s) => {
                 const cats = s.val() || {};
                 populateCats(cats);
@@ -617,7 +647,7 @@
             }
         }
 
-        // --- Category Management (NEW) ---
+        // --- Category Management ---
         function renderCategoriesManager(data) {
             const tbody = document.getElementById('categoriesManageList');
             tbody.innerHTML = '';
@@ -666,6 +696,47 @@
         function populateCats(data) { const s=document.getElementById('prodCatSelect'); s.innerHTML='<option value="" disabled selected>اختر</option>'; Object.values(data).forEach(c=>s.innerHTML+=`<option value="${c.name}">${c.name}</option>`); }
         function renderProdManage(data) { document.getElementById('manageProdList').innerHTML=Object.entries(data).map(([k,p])=>`<tr><td>${p.name}</td><td>${p.available?'متاح':'مغلق'}</td><td><button class="btn-blue" onclick="window.tog('${k}',${p.available})">تغيير</button><button class="btn-red" onclick="window.delP('${k}')">حذف</button></td></tr>`).join(''); }
         window.tog=(k,s)=>update(ref(db,'products/'+k),{available:!s}); window.delP=(k)=>confirm('حذف؟')&&remove(ref(db,'products/'+k));
+
+        // --- GAME LOGIC (Tic-Tac-Toe) ---
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameActive = true;
+
+        window.playGame = function(index) {
+            if(gameBoard[index] === '' && gameActive) {
+                gameBoard[index] = currentPlayer;
+                const cell = document.getElementsByClassName('game-cell')[index];
+                cell.innerText = currentPlayer;
+                cell.classList.add(currentPlayer.toLowerCase()); // add class 'x' or 'o' for styling
+
+                if(checkWin()) {
+                    document.getElementById('gameStatus').innerHTML = `الفائز هو: <span style="font-size:2rem; color:${currentPlayer==='X'?'var(--red)':'var(--blue)'}">${currentPlayer}</span> 🎉`;
+                    gameActive = false;
+                } else if(!gameBoard.includes('')) {
+                    document.getElementById('gameStatus').innerText = "تعادل! 😐";
+                    gameActive = false;
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    document.getElementById('gameStatus').innerHTML = `الدور على: <span style="color:${currentPlayer==='X'?'var(--red)':'var(--blue)'}">${currentPlayer}</span>`;
+                }
+            }
+        }
+
+        function checkWin() {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return wins.some(c => gameBoard[c[0]] && gameBoard[c[0]] === gameBoard[c[1]] && gameBoard[c[0]] === gameBoard[c[2]]);
+        }
+
+        window.resetGame = function() {
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            document.querySelectorAll('.game-cell').forEach(c => {
+                c.innerText = '';
+                c.classList.remove('x', 'o');
+            });
+            document.getElementById('gameStatus').innerHTML = `الدور على: <span style="color:var(--red)">X</span>`;
+        }
     </script>
 </body>
 </html>
