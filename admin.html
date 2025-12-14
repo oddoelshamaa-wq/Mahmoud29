@@ -10,6 +10,50 @@
         :root { --blue: #18248b; --red: #8c0104; --white: #ffffff; --green: #27ae60; --gray: #f0f2f5; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; background: var(--gray); height: 100vh; overflow: hidden; }
 
+        /* --- LOADER STYLES (ستايل منكش) --- */
+        #loader-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff; z-index: 99999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        .loader-content { position: relative; width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; }
+        .loader-logo { 
+            width: 100px; height: 100px; border-radius: 50%; object-fit: cover; 
+            border: 4px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite; 
+        }
+        .loader-spinner {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border: 3px solid transparent; border-top-color: var(--blue); border-bottom-color: var(--red);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 1;
+        }
+        .loader-text { 
+            margin-top: 20px; font-size: 2rem; font-weight: 900; color: var(--blue); 
+            letter-spacing: 5px; text-transform: uppercase;
+            animation: shake 2s infinite;
+        }
+        
+        /* انميشن منكش (Glitch/Shake) */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes glitch { 
+            0% { transform: translate(0) } 
+            20% { transform: translate(-2px, 2px) } 
+            40% { transform: translate(-2px, -2px) } 
+            60% { transform: translate(2px, 2px) } 
+            80% { transform: translate(2px, -2px) } 
+            100% { transform: translate(0) }
+        }
+        @keyframes shake {
+            0% { transform: skewX(-10deg); }
+            5% { transform: skewX(10deg); }
+            10% { transform: skewX(-10deg); }
+            15% { transform: skewX(10deg); }
+            20% { transform: skewX(0deg); }
+            100% { transform: skewX(0deg); }
+        }
+        .hide-loader { opacity: 0; visibility: hidden; }
+
         /* Login */
         #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--blue); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 3000; }
         #loginScreen input { padding: 12px; width: 280px; margin: 10px; border-radius: 5px; border: none; font-size: 1rem; }
@@ -36,16 +80,10 @@
         .btn-red { background: #b71c1c; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .btn-warning { background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 5px; }
 
-        /* Order Cards - Special Styles for Cancel Requests */
+        /* Order Cards */
         .order-card { background: white; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 5px solid var(--blue); cursor: pointer; position: relative; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .order-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        
-        /* هذا الجزء يخص تمييز طلب الإلغاء */
-        .cancel-requested { 
-            border-left-color: orange !important; 
-            background-color: #fff8e1; 
-            animation: flashOrange 1.5s infinite alternate; 
-        }
+        .cancel-requested { border-left-color: orange !important; background-color: #fff8e1; animation: flashOrange 1.5s infinite alternate; }
         @keyframes flashOrange { from { box-shadow: 0 0 5px orange; } to { box-shadow: 0 0 15px orange; } }
         .cancel-badge { background: var(--red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; position: absolute; top: 10px; left: 10px; z-index: 10; }
 
@@ -73,6 +111,15 @@
     </style>
 </head>
 <body>
+
+    <!-- Loader -->
+    <div id="loader-wrapper">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <img src="https://scontent.fcai20-3.fna.fbcdn.net/v/t39.30808-6/374567354_674327448061584_5979966477678462692_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=FrSE9MWl_6QQ7kNvwFAhUPI&_nc_oc=AdngfO4ff4o0AxSljHVhHGAePUVZNEldFjkcBsv_8eQHPfm9ij4TVXXKAhVa_6BsBjk&_nc_zt=23&_nc_ht=scontent.fcai20-3.fna&_nc_gid=TQzikFqmvYqvF2LOrq__Ng&oh=00_AfnWFPsTcAl4x79UCBVaeSyBIxtONCa4PSqLWNhw7aGh5Q&oe=6942B46F" class="loader-logo" alt="Nagaf Logo">
+        </div>
+        <div class="loader-text">N A G A F</div>
+    </div>
 
     <audio id="alarmSound" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" loop></audio>
     <audio id="msgSound" src="https://assets.mixkit.co/active_storage/sfx/2346/2346-preview.mp3"></audio>
@@ -217,7 +264,7 @@
         </div>
     </div>
 
-    <!-- Modal Order Details (Updated for Cancellation) -->
+    <!-- Modal Order Details -->
     <div class="modal" id="orderModal">
         <div class="modal-content">
             <h2 style="color:var(--blue); text-align:center;">تفاصيل الطلب</h2>
@@ -258,6 +305,15 @@
         const firebaseConfig = { apiKey: "AIzaSyAaf3l8VFttOCruK9jZczBsi1eBwg2U5yE", authDomain: "nagaf-f9b1c.firebaseapp.com", projectId: "nagaf-f9b1c", databaseURL: "https://nagaf-f9b1c-default-rtdb.firebaseio.com", storageBucket: "nagaf-f9b1c.appspot.com", messagingSenderId: "840123927886", appId: "1:840123927886:web:c6baad7f059cfab461e21f" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // --- Loader Logic ---
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('loader-wrapper');
+            setTimeout(() => {
+                loader.classList.add('hide-loader');
+                setTimeout(() => { loader.style.display = 'none'; }, 800);
+            }, 2500); 
+        });
 
         let currentUser = JSON.parse(localStorage.getItem('nagaf_staff_user'));
         let activeChatUser = null;
@@ -400,7 +456,7 @@
 
         window.rejectCancelReq = function(k) {
             if(confirm("هل تريد رفض الإلغاء وإجبار استكمال الطلب؟")) {
-                update(ref(db, 'orders/'+k), { cancelRequest: false });
+                update(ref(db, 'orders/'+k), { cancelRequest: false }); // إزالة علامة الطلب فقط
                 document.getElementById('orderModal').style.display = 'none';
             }
         }
