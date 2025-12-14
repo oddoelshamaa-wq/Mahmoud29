@@ -10,7 +10,7 @@
         :root { --blue: #18248b; --red: #8c0104; --white: #ffffff; --green: #27ae60; --gray: #f0f2f5; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; background: var(--gray); height: 100vh; overflow: hidden; }
 
-        /* --- LOADER STYLES --- */
+        /* --- LOADER --- */
         #loader-wrapper {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; z-index: 99999;
@@ -35,22 +35,8 @@
         }
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes glitch { 
-            0% { transform: translate(0) } 
-            20% { transform: translate(-2px, 2px) } 
-            40% { transform: translate(-2px, -2px) } 
-            60% { transform: translate(2px, 2px) } 
-            80% { transform: translate(2px, -2px) } 
-            100% { transform: translate(0) }
-        }
-        @keyframes shake {
-            0% { transform: skewX(-10deg); }
-            5% { transform: skewX(10deg); }
-            10% { transform: skewX(-10deg); }
-            15% { transform: skewX(10deg); }
-            20% { transform: skewX(0deg); }
-            100% { transform: skewX(0deg); }
-        }
+        @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
+        @keyframes shake { 0% { transform: skewX(-10deg); } 5% { transform: skewX(10deg); } 10% { transform: skewX(-10deg); } 15% { transform: skewX(10deg); } 20% { transform: skewX(0deg); } 100% { transform: skewX(0deg); } }
         .hide-loader { opacity: 0; visibility: hidden; }
 
         /* Login */
@@ -95,7 +81,7 @@
         .dash-card { flex: 1; min-width: 150px; background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .stat-val { font-size: 2rem; font-weight: bold; color: var(--blue); }
         
-        /* Chat */
+        /* Chat & Group Chat */
         .chat-layout { display: flex; height: 70vh; gap: 20px; }
         .chat-list { width: 250px; background: white; overflow-y: auto; border: 1px solid #ddd; }
         .chat-area { flex: 1; background: white; display: flex; flex-direction: column; border: 1px solid #ddd; }
@@ -103,12 +89,25 @@
         .chat-user-item:hover { background: #f1f1f1; }
         .chat-user-item.has-new { background: #e3f2fd; font-weight: bold; }
         
+        /* Group Chat Specifics */
+        .group-chat-container { height: 70vh; display: flex; flex-direction: column; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .group-msgs-box { flex: 1; overflow-y: auto; padding: 20px; background: #f0f2f5; display: flex; flex-direction: column; gap: 10px; }
+        .g-msg { max-width: 70%; padding: 10px 15px; border-radius: 15px; position: relative; font-size: 0.95rem; }
+        .g-msg.me { align-self: flex-end; background: var(--blue); color: white; border-bottom-left-radius: 0; }
+        .g-msg.other { align-self: flex-start; background: white; color: black; border-bottom-right-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .g-sender { font-size: 0.75rem; color: #666; margin-bottom: 3px; font-weight: bold; display: block; }
+        
+        /* Online/Offline Status */
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 5px; }
+        .status-online { background-color: var(--green); box-shadow: 0 0 5px var(--green); }
+        .status-offline { background-color: #ccc; }
+
         .item-note { color: #d32f2f; font-weight: bold; display: block; margin-top: 4px; font-size: 0.95rem; background: #fff5f5; padding: 2px 5px; border-radius: 4px; width: fit-content; }
         .clickable-row { cursor: pointer; transition: background 0.2s; }
         .clickable-row:hover { background-color: #f1f1f1; }
         .reason-box { background: #ffebee; color: #b71c1c; padding: 15px; margin: 15px 0; border-radius: 5px; border: 1px solid #ffcdd2; }
 
-        /* --- تأثيرات الكوميديا الجديدة --- */
+        /* --- Funny Effects --- */
         .runaway-btn { position: relative; transition: 0.1s ease; }
         .funny-toast {
             position: fixed; top: 20px; right: 20px; background: #333; color: #fff; 
@@ -151,16 +150,19 @@
         </h2>
         <div class="menu-item active" onclick="nav('live-orders')"><i class="fas fa-bell"></i> الطلبات الحية</div>
         <div class="menu-item" onclick="nav('dashboard')"><i class="fas fa-chart-line"></i> السجل والإحصائيات</div>
+        <div class="menu-item" onclick="nav('group-chat-section')">
+            <i class="fas fa-users"></i> جروب الموظفين <span style="font-size:0.7em; background:var(--green); padding:2px 5px; border-radius:3px;">جديد</span>
+        </div>
         <div class="menu-item" onclick="nav('manage-products')"><i class="fas fa-boxes"></i> إدارة المنتجات</div>
         
         <div class="admin-only">
             <div class="menu-item" onclick="nav('reports')"><i class="fas fa-file-invoice-dollar"></i> التقارير</div>
             <div class="menu-item" onclick="nav('products')"><i class="fas fa-plus-circle"></i> إضافة منتج جديد</div>
-            <div class="menu-item" onclick="nav('users')"><i class="fas fa-users-cog"></i> الموظفين</div>
+            <div class="menu-item" onclick="nav('users')"><i class="fas fa-users-cog"></i> الموظفين والحضور</div>
         </div>
 
         <div class="menu-item" id="chatMenuItem" onclick="nav('chat')">
-            <i class="fas fa-comments"></i> الشات 
+            <i class="fas fa-comments"></i> شات العملاء
             <span class="notification-dot" id="chatNotifyDot"></span>
         </div>
 
@@ -226,6 +228,20 @@
             </table>
         </div>
 
+        <!-- NEW: Group Chat Section -->
+        <div id="group-chat-section" class="section">
+            <h3>جروب الموظفين (رغي الشغل) 🗣️</h3>
+            <div class="group-chat-container">
+                <div class="group-msgs-box" id="groupChatBox">
+                    <!-- Messages will load here -->
+                </div>
+                <div style="padding:15px; background:white; border-top:1px solid #ddd; display:flex; gap:10px;">
+                    <input type="text" id="groupMsgInput" placeholder="اكتب رسالة للجروب كله..." style="margin:0;">
+                    <button class="btn-blue" onclick="sendGroupMsg()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
         <div id="reports" class="section">
             <div class="form-box">
                 <h3>استخراج التقارير</h3>
@@ -278,7 +294,8 @@
                 <select id="newURole"><option value="receiver">متلقي طلبات</option><option value="admin">مدير</option></select>
                 <button class="btn-blue" id="addUserBtn">إضافة</button>
             </div>
-            <table class="users-table"><thead><tr><th>إجراءات</th><th>الصلاحية</th><th>الاسم</th></tr></thead><tbody id="usersListBody"></tbody></table>
+            <h3>قائمة الموظفين وحالة الاتصال</h3>
+            <table class="users-table"><thead><tr><th>إجراءات</th><th>الصلاحية</th><th>الاسم</th><th>الحالة (Online)</th></tr></thead><tbody id="usersListBody"></tbody></table>
         </div>
 
         <div id="chat" class="section">
@@ -308,7 +325,7 @@
         </div>
     </div>
 
-    <!-- Modal Asfoura (العصفورة) -->
+    <!-- Modal Asfoura -->
     <div class="modal" id="asfouraModal">
         <div class="modal-content">
             <h2 style="color:var(--blue); text-align:center;">🐦 لوحة تحكم العصفورة</h2>
@@ -347,7 +364,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set, update, onValue, remove, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, set, update, onValue, remove, onChildAdded, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyAaf3l8VFttOCruK9jZczBsi1eBwg2U5yE", authDomain: "nagaf-f9b1c.firebaseapp.com", projectId: "nagaf-f9b1c", databaseURL: "https://nagaf-f9b1c-default-rtdb.firebaseio.com", storageBucket: "nagaf-f9b1c.appspot.com", messagingSenderId: "840123927886", appId: "1:840123927886:web:c6baad7f059cfab461e21f" };
         const app = initializeApp(firebaseConfig);
@@ -363,19 +380,21 @@
         });
 
         let currentUser = JSON.parse(localStorage.getItem('nagaf_staff_user'));
+        let currentUserKey = localStorage.getItem('nagaf_staff_key'); // NEW: Save Key for presence
         let activeChatUser = null;
         let tempVariants = [];
         let allOrders = {};
         let allUsersData = {};
         let chatsLoaded = false;
         let editingUserKey = null;
-        let loginTime = Date.now(); // عشان الإشعارات القديمة متظهرش
+        let loginTime = Date.now(); 
 
         if(currentUser) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminNameDisplay').innerText = currentUser.name; 
             updateUIByRole();
             startSystem();
+            if(currentUserKey) presenceSystem(currentUserKey);
         }
 
         document.getElementById('loginBtn').addEventListener('click', () => {
@@ -384,24 +403,78 @@
             if(!u || !p) return alert("أدخل البيانات");
             onValue(ref(db, 'users'), (snap) => {
                 let found = null;
+                let foundKey = null;
                 const users = snap.val() || {};
                 
                 // --- باسورد الأدمن 2002 ---
-                if(u === 'admin' && p === '2002') found = {name: 'Admin', role: 'admin'};
-                else Object.values(users).forEach(user => { if(user.name === u && user.pass === p) found = user; });
+                if(u === 'admin' && p === '2002') { found = {name: 'Admin', role: 'admin'}; foundKey = 'admin_key'; }
+                else {
+                    Object.entries(users).forEach(([key, user]) => { 
+                        if(user.name === u && user.pass === p) { found = user; foundKey = key; } 
+                    });
+                }
                 
                 if(found) {
                     currentUser = found;
+                    currentUserKey = foundKey;
                     localStorage.setItem('nagaf_staff_user', JSON.stringify(found));
+                    localStorage.setItem('nagaf_staff_key', foundKey);
+                    
                     document.getElementById('loginScreen').style.display = 'none';
                     document.getElementById('adminNameDisplay').innerText = found.name;
                     updateUIByRole();
                     startSystem();
+                    presenceSystem(foundKey);
                 } else alert('خطأ في البيانات');
             }, {onlyOnce: true});
         });
 
-        // --- 1. كود السلفة اللي بتهرب (Runaway Button) ---
+        // --- NEW: Presence System (Online/Offline) ---
+        function presenceSystem(uid) {
+            const connectedRef = ref(db, ".info/connected");
+            const userStatusRef = ref(db, "users/" + uid);
+
+            onValue(connectedRef, (snap) => {
+                if (snap.val() === true) {
+                    // أول ما يتصل، سجل إنه أونلاين
+                    update(userStatusRef, { state: 'online', last_changed: serverTimestamp() });
+                    // لما يفصل (يقفل المتصفح أو النت يقطع)، سجل أوفلاين أوتوماتيك
+                    onDisconnect(userStatusRef).update({ state: 'offline', last_changed: serverTimestamp() });
+                }
+            });
+        }
+
+        // --- NEW: Group Chat Logic ---
+        function initGroupChat() {
+            const chatBox = document.getElementById('groupChatBox');
+            onChildAdded(ref(db, 'group_chat'), (snapshot) => {
+                const msg = snapshot.val();
+                const isMe = msg.sender === currentUser.name;
+                const div = document.createElement('div');
+                div.className = `g-msg ${isMe ? 'me' : 'other'}`;
+                div.innerHTML = `
+                    <span class="g-sender">${isMe ? 'أنا' : msg.sender}</span>
+                    ${msg.text}
+                `;
+                chatBox.appendChild(div);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        window.sendGroupMsg = function() {
+            const input = document.getElementById('groupMsgInput');
+            const txt = input.value.trim();
+            if(!txt) return;
+            
+            push(ref(db, 'group_chat'), {
+                sender: currentUser.name,
+                text: txt,
+                timestamp: serverTimestamp()
+            });
+            input.value = '';
+        }
+
+        // --- Funny Logic ---
         window.runAway = function(btn) {
             const x = Math.random() * (window.innerWidth - 200);
             const y = Math.random() * (window.innerHeight - 50);
@@ -412,7 +485,6 @@
             btn.innerText = "مش هتلحقني 🏃‍♂️";
         }
 
-        // --- 2. كود العصفورة المتطور (Real-time Snitch) ---
         window.openAsfouraModal = function() {
             document.getElementById('asfouraModal').style.display = 'flex';
         }
@@ -420,35 +492,21 @@
         window.sendSnitch = function() {
             const victim = document.getElementById('victimName').value.trim();
             const target = document.getElementById('snitchTarget').value;
-            
             if(!victim) return alert("لازم تكتب اسم الضحية!");
-
-            // إرسال الإشعار للداتابيز عشان يظهر عند الناس
-            push(ref(db, 'system_notifications'), {
-                type: 'snitch',
-                victim: victim,
-                target: target, // all, admin, victim
-                sender: currentUser.name,
-                timestamp: Date.now()
-            });
-
+            push(ref(db, 'system_notifications'), { type: 'snitch', victim: victim, target: target, sender: currentUser.name, timestamp: Date.now() });
             document.getElementById('asfouraModal').style.display = 'none';
             document.getElementById('victimName').value = '';
             alert("تم تطيير العصفورة بنجاح 🐦✈️");
         }
 
-        // --- 3. كود الخصم (Ekhsemlo) ---
         window.activateKhasm = function() {
              document.getElementById('khasmSound').play().catch(()=>{});
             const reasons = ["عشان واقف عوج", "بسبب التأخير في الرد", "عشان شربت شاي لوحدك", "قرار سيادي من الإدارة"];
             const reason = reasons[Math.floor(Math.random() * reasons.length)];
             const amount = Math.floor(Math.random() * 50) + 10;
-            
-            // خصم محلي (تظهر للشخص اللي داس بس كنوع من الهزار)
             showToast(`✂️ تم خصم <strong>${amount} جنيه</strong> ${reason}!`, "red");
         }
 
-        // --- 4. كود الشكوى ---
         window.complainBoss = function() {
             let complaint = prompt("اكتب شكوتك في المدير بمنتهى الصراحة (السرية مضمونة 😈):");
             if(complaint) {
@@ -459,34 +517,17 @@
             }
         }
 
-        // --- الاستماع للإشعارات (عشان العصفورة تظهر عند الناس) ---
         function listenToNotifications() {
             onChildAdded(ref(db, 'system_notifications'), (snapshot) => {
                 const notif = snapshot.val();
-                
-                // تجاهل الإشعارات القديمة (قبل ما أعمل لوجن)
                 if(notif.timestamp < loginTime) return;
-
                 if(notif.type === 'snitch') {
                     let shouldShow = false;
                     let msg = "";
-
-                    // تحديد مين يشوف الرسالة
-                    if(notif.target === 'all') {
-                        shouldShow = true; // الكل يشوفها
-                        msg = `🐦 <strong>عاجل (فضيحة):</strong> العصفورة بتقول إن <strong>${notif.victim}</strong> بيزوق من الشغل!`;
-                    } else if (notif.target === 'admin' && currentUser.role === 'admin') {
-                        shouldShow = true; // الأدمن بس يشوفها
-                        msg = `🐦 <strong>تقرير سري:</strong> الموظف <strong>${notif.sender}</strong> بيبلغ عن <strong>${notif.victim}</strong>`;
-                    } else if (notif.target === 'victim' && currentUser.name.includes(notif.victim)) {
-                        shouldShow = true; // الضحية بس يشوفها (لو اسمه موجود في النص)
-                        msg = `👻 <strong>تحذير:</strong> العصفورة بلغت عنك الإدارة.. استخبى بقى!`;
-                    }
-
-                    if(shouldShow) {
-                        document.getElementById('asfouraSound').play().catch(()=>{});
-                        showToast(msg, "blue");
-                    }
+                    if(notif.target === 'all') { shouldShow = true; msg = `🐦 <strong>عاجل (فضيحة):</strong> العصفورة بتقول إن <strong>${notif.victim}</strong> بيزوق من الشغل!`; } 
+                    else if (notif.target === 'admin' && currentUser.role === 'admin') { shouldShow = true; msg = `🐦 <strong>تقرير سري:</strong> الموظف <strong>${notif.sender}</strong> بيبلغ عن <strong>${notif.victim}</strong>`; } 
+                    else if (notif.target === 'victim' && currentUser.name.includes(notif.victim)) { shouldShow = true; msg = `👻 <strong>تحذير:</strong> العصفورة بلغت عنك الإدارة.. استخبى بقى!`; }
+                    if(shouldShow) { document.getElementById('asfouraSound').play().catch(()=>{}); showToast(msg, "blue"); }
                 }
             });
         }
@@ -497,11 +538,7 @@
             t.style.borderRightColor = color === 'red' ? '#d32f2f' : '#1976d2';
             t.innerHTML = html;
             document.body.appendChild(t);
-            
-            setTimeout(() => { 
-                t.style.transform = "translateX(120%)";
-                setTimeout(() => t.remove(), 500);
-            }, 5000);
+            setTimeout(() => { t.style.transform = "translateX(120%)"; setTimeout(() => t.remove(), 500); }, 5000);
         }
 
         function updateUIByRole() {
@@ -515,7 +552,10 @@
         }
 
         window.logoutStaff = function() {
+            // Set offline before logout logic clears data
+            if(currentUserKey) update(ref(db, "users/" + currentUserKey), { state: 'offline' });
             localStorage.removeItem('nagaf_staff_user');
+            localStorage.removeItem('nagaf_staff_key');
             location.reload();
         }
 
@@ -533,185 +573,90 @@
             onValue(ref(db, 'products'), (s) => renderProdManage(s.val() || {}));
             onValue(ref(db, 'categories'), (s) => populateCats(s.val() || {}));
             onValue(ref(db, 'chats'), (s) => handleChatUpdate(s.val() || {}));
-            
-            // تشغيل الاستماع لإشعارات العصفورة
             listenToNotifications();
+            initGroupChat();
         }
 
         function renderOrders(data) {
             const n = document.getElementById('newOrdersList'), p = document.getElementById('processingOrdersList');
             n.innerHTML = ''; p.innerHTML = '';
             let hasNewOrder = false;
-
             Object.entries(data).forEach(([k,o]) => {
                 const isCancelReq = o.cancelRequest ? 'cancel-requested' : '';
                 const badge = o.cancelRequest ? '<span class="cancel-badge">طلب إلغاء!</span>' : '';
-
-                const c = `<div class="order-card ${isCancelReq}" onclick="openOrder('${k}')">
-                    ${badge}
-                    <h4>#${k.slice(-4)} - ${o.customerName}</h4>
-                    <div>${o.phone}</div>
-                    <div>${o.address}</div>
-                    <div>${o.total} ج</div>
-                </div>`;
-                if(o.status === 'pending' || o.status === 'new') {
-                    n.innerHTML += c;
-                    if(!o.seenByAdmin) { hasNewOrder = true; update(ref(db,'orders/'+k),{seenByAdmin:true}); }
-                } else if(o.status === 'processing') p.innerHTML += c;
+                const c = `<div class="order-card ${isCancelReq}" onclick="openOrder('${k}')">${badge}<h4>#${k.slice(-4)} - ${o.customerName}</h4><div>${o.phone}</div><div>${o.address}</div><div>${o.total} ج</div></div>`;
+                if(o.status === 'pending' || o.status === 'new') { n.innerHTML += c; if(!o.seenByAdmin) { hasNewOrder = true; update(ref(db,'orders/'+k),{seenByAdmin:true}); } } else if(o.status === 'processing') p.innerHTML += c;
             });
-
             const alarm = document.getElementById('alarmSound');
             if(hasNewOrder) { alarm.currentTime = 0; alarm.play().catch(()=>{}); }
         }
 
         window.filterHistory = function() { updateStats(allOrders); }
-
         window.openOrder = function(k) {
-            const alarm = document.getElementById('alarmSound');
-            alarm.pause(); alarm.currentTime = 0;
-
+            const alarm = document.getElementById('alarmSound'); alarm.pause(); alarm.currentTime = 0;
             const o = allOrders[k]; if(!o) return;
-            
-            const items = (o.items || o.cart || []).map(i => {
-                let noteHtml = i.note && i.note.trim() !== '' ? `<span class="item-note">⚠️ ${i.note}</span>` : '';
-                return `<li><div style="margin-bottom:5px;">${i.name} ${i.variant ? `(${i.variant.bread} ${i.variant.size != 'موحد' ? '- ' + i.variant.size : ''})` : ''} - <strong>${i.variant ? i.variant.price : i.price} ج</strong></div>${noteHtml}</li>`;
-            }).join('');
-            
+            const items = (o.items || o.cart || []).map(i => { let noteHtml = i.note && i.note.trim() !== '' ? `<span class="item-note">⚠️ ${i.note}</span>` : ''; return `<li><div style="margin-bottom:5px;">${i.name} ${i.variant ? `(${i.variant.bread} ${i.variant.size != 'موحد' ? '- ' + i.variant.size : ''})` : ''} - <strong>${i.variant ? i.variant.price : i.price} ج</strong></div>${noteHtml}</li>`; }).join('');
             let extraInfo = '';
-            if(o.status === 'cancelled') {
-                if(o.adminReason) extraInfo = `<div class="reason-box"><strong>تم الإلغاء/الرفض بواسطة الإدارة:</strong><br>${o.adminReason}</div>`;
-                else if(o.cancelReason) extraInfo = `<div class="reason-box"><strong>تم الإلغاء بطلب من العميل:</strong><br>${o.cancelReason}</div>`;
-            }
-
+            if(o.status === 'cancelled') { if(o.adminReason) extraInfo = `<div class="reason-box"><strong>تم الإلغاء/الرفض بواسطة الإدارة:</strong><br>${o.adminReason}</div>`; else if(o.cancelReason) extraInfo = `<div class="reason-box"><strong>تم الإلغاء بطلب من العميل:</strong><br>${o.cancelReason}</div>`; }
             document.getElementById('modalBody').innerHTML = `<p><strong>${o.customerName}</strong> (${o.phone})</p><p>${o.address}</p><hr><ul style="padding-right:20px; line-height:1.8;">${items}</ul>${extraInfo}<h3 style="color:var(--red)">${o.total} ج</h3>`;
-            
-            const act = document.getElementById('modalActions');
-            const alertBox = document.getElementById('cancelAlert');
-            act.innerHTML = ''; 
-
-            if(o.cancelRequest) {
-                alertBox.style.display = 'block';
-                document.getElementById('cancelReasonText').innerText = o.cancelReason || "غير محدد";
-                act.innerHTML = `
-                    <button class="btn-red" onclick="acceptCancelReq('${k}')">✔ موافقة على الإلغاء</button>
-                    <button class="btn-blue" onclick="rejectCancelReq('${k}')">✖ رفض (استكمال الطلب)</button>`;
-            } else {
-                alertBox.style.display = 'none';
-                if(o.status==='pending'||o.status==='new') act.innerHTML = `<button class="btn-blue" style="background:var(--green)" onclick="upStatus('${k}','processing')">قبول وتجهيز</button><button class="btn-red" onclick="rejectOrder('${k}')">رفض</button>`;
-                else if(o.status==='processing') act.innerHTML = `<button class="btn-blue" onclick="upStatus('${k}','completed')">إنهاء</button>`;
-            }
+            const act = document.getElementById('modalActions'); const alertBox = document.getElementById('cancelAlert'); act.innerHTML = ''; 
+            if(o.cancelRequest) { alertBox.style.display = 'block'; document.getElementById('cancelReasonText').innerText = o.cancelReason || "غير محدد"; act.innerHTML = `<button class="btn-red" onclick="acceptCancelReq('${k}')">✔ موافقة على الإلغاء</button><button class="btn-blue" onclick="rejectCancelReq('${k}')">✖ رفض (استكمال الطلب)</button>`; } 
+            else { alertBox.style.display = 'none'; if(o.status==='pending'||o.status==='new') act.innerHTML = `<button class="btn-blue" style="background:var(--green)" onclick="upStatus('${k}','processing')">قبول وتجهيز</button><button class="btn-red" onclick="rejectOrder('${k}')">رفض</button>`; else if(o.status==='processing') act.innerHTML = `<button class="btn-blue" onclick="upStatus('${k}','completed')">إنهاء</button>`; }
             document.getElementById('orderModal').style.display = 'block';
         }
 
-        window.acceptCancelReq = function(k) {
-            if(confirm("هل توافق على إلغاء هذا الطلب بناءً على رغبة العميل؟")) {
-                update(ref(db, 'orders/'+k), { status: 'cancelled', cancelRequest: false, adminReason: 'تمت الموافقة على طلب العميل بالإلغاء', handledBy: currentUser.name });
-                document.getElementById('orderModal').style.display = 'none';
-            }
-        }
-
-        window.rejectCancelReq = function(k) {
-            if(confirm("هل تريد رفض الإلغاء وإجبار استكمال الطلب؟")) {
-                update(ref(db, 'orders/'+k), { cancelRequest: false }); // إزالة علامة الطلب فقط
-                document.getElementById('orderModal').style.display = 'none';
-            }
-        }
-
+        window.acceptCancelReq = function(k) { if(confirm("هل توافق على إلغاء هذا الطلب بناءً على رغبة العميل؟")) { update(ref(db, 'orders/'+k), { status: 'cancelled', cancelRequest: false, adminReason: 'تمت الموافقة على طلب العميل بالإلغاء', handledBy: currentUser.name }); document.getElementById('orderModal').style.display = 'none'; } }
+        window.rejectCancelReq = function(k) { if(confirm("هل تريد رفض الإلغاء وإجبار استكمال الطلب؟")) { update(ref(db, 'orders/'+k), { cancelRequest: false }); document.getElementById('orderModal').style.display = 'none'; } }
         window.upStatus = (k,s) => { update(ref(db,'orders/'+k), {status:s, handledBy:currentUser.name}); document.getElementById('orderModal').style.display='none'; }
-        window.rejectOrder = function(k) {
-            let reason = prompt("يرجى كتابة سبب الرفض/الإلغاء (سيظهر للعميل وفي السجل):");
-            if(reason) {
-                update(ref(db,'orders/'+k), { status: 'cancelled', adminReason: reason, cancelRequest: false, handledBy:currentUser.name });
-                document.getElementById('orderModal').style.display = 'none';
-            }
-        }
+        window.rejectOrder = function(k) { let reason = prompt("يرجى كتابة سبب الرفض/الإلغاء (سيظهر للعميل وفي السجل):"); if(reason) { update(ref(db,'orders/'+k), { status: 'cancelled', adminReason: reason, cancelRequest: false, handledBy:currentUser.name }); document.getElementById('orderModal').style.display = 'none'; } }
 
         function updateStats(data) {
             let list = Object.entries(data).map(([k,v]) => ({...v, key: k})).reverse();
-            if(document.getElementById('adminStatsBar').style.display !== 'none') {
-                let comp = list.filter(o => o.status === 'completed');
-                document.getElementById('todaySales').innerText = comp.reduce((s,o) => s + (parseInt(o.total)||0), 0) + ' ج';
-                document.getElementById('totalCount').innerText = list.length; 
-                document.getElementById('cancelledCount').innerText = list.filter(o => o.status === 'cancelled').length; 
-            }
-            const term = document.getElementById('searchPhoneInput').value;
-            const statusFilter = document.getElementById('filterStatus').value;
+            if(document.getElementById('adminStatsBar').style.display !== 'none') { let comp = list.filter(o => o.status === 'completed'); document.getElementById('todaySales').innerText = comp.reduce((s,o) => s + (parseInt(o.total)||0), 0) + ' ج'; document.getElementById('totalCount').innerText = list.length; document.getElementById('cancelledCount').innerText = list.filter(o => o.status === 'cancelled').length; }
+            const term = document.getElementById('searchPhoneInput').value; const statusFilter = document.getElementById('filterStatus').value;
             if(term) list = list.filter(o => o.phone.includes(term));
-            if(statusFilter !== 'all') {
-                if(statusFilter === 'processing') list = list.filter(o => o.status === 'pending' || o.status === 'new' || o.status === 'processing');
-                else list = list.filter(o => o.status === statusFilter);
-            }
-            document.getElementById('historyTableBody').innerHTML = list.map(o => `
-                <tr class="clickable-row" onclick="openOrder('${o.key}')">
-                    <td>#${o.key.slice(-4)}</td>
-                    <td>${new Date(o.timestamp).toLocaleTimeString('ar-EG')}</td>
-                    <td>${o.customerName}</td>
-                    <td>${o.phone}</td>
-                    <td>${o.total} ج</td>
-                    <td style="color:${o.status==='completed'?'green':(o.status==='cancelled'?'red':'orange')}">${o.status==='completed'?'مكتمل':(o.status==='cancelled'?'ملغي':'جاري')}</td>
-                    <td>${o.handledBy||'-'}</td>
-                </tr>`).join('');
+            if(statusFilter !== 'all') { if(statusFilter === 'processing') list = list.filter(o => o.status === 'pending' || o.status === 'new' || o.status === 'processing'); else list = list.filter(o => o.status === statusFilter); }
+            document.getElementById('historyTableBody').innerHTML = list.map(o => `<tr class="clickable-row" onclick="openOrder('${o.key}')"><td>#${o.key.slice(-4)}</td><td>${new Date(o.timestamp).toLocaleTimeString('ar-EG')}</td><td>${o.customerName}</td><td>${o.phone}</td><td>${o.total} ج</td><td style="color:${o.status==='completed'?'green':(o.status==='cancelled'?'red':'orange')}">${o.status==='completed'?'مكتمل':(o.status==='cancelled'?'ملغي':'جاري')}</td><td>${o.handledBy||'-'}</td></tr>`).join('');
         }
 
         window.generateReport = function() {
-            const m = document.getElementById('reportMonthInput').value;
-            if(!m) return alert("الرجاء اختيار الشهر أولاً");
-            const [year, month] = m.split('-');
-            const reportData = {};
-            Object.values(allOrders).forEach(o => {
-                if(o.status === 'completed') {
-                    const d = new Date(o.timestamp);
-                    if(d.getFullYear() == year && (d.getMonth() + 1) == month) {
-                        const emp = o.handledBy || 'غير محدد';
-                        if(!reportData[emp]) reportData[emp] = { count: 0, total: 0 };
-                        reportData[emp].count += 1;
-                        reportData[emp].total += (parseInt(o.total) || 0);
-                    }
-                }
-            });
-            document.getElementById('repMonthName').innerText = m;
-            document.getElementById('reportResult').style.display = 'block';
-            const tbody = document.getElementById('reportTableBody');
-            tbody.innerHTML = '';
-            if(Object.keys(reportData).length === 0) tbody.innerHTML = '<tr><td colspan="3">لا توجد مبيعات في هذا الشهر</td></tr>';
-            else Object.entries(reportData).forEach(([name, data]) => tbody.innerHTML += `<tr><td>${name}</td><td>${data.count}</td><td>${data.total} ج</td></tr>`);
+            const m = document.getElementById('reportMonthInput').value; if(!m) return alert("الرجاء اختيار الشهر أولاً");
+            const [year, month] = m.split('-'); const reportData = {};
+            Object.values(allOrders).forEach(o => { if(o.status === 'completed') { const d = new Date(o.timestamp); if(d.getFullYear() == year && (d.getMonth() + 1) == month) { const emp = o.handledBy || 'غير محدد'; if(!reportData[emp]) reportData[emp] = { count: 0, total: 0 }; reportData[emp].count += 1; reportData[emp].total += (parseInt(o.total) || 0); } } });
+            document.getElementById('repMonthName').innerText = m; document.getElementById('reportResult').style.display = 'block'; const tbody = document.getElementById('reportTableBody'); tbody.innerHTML = '';
+            if(Object.keys(reportData).length === 0) tbody.innerHTML = '<tr><td colspan="3">لا توجد مبيعات في هذا الشهر</td></tr>'; else Object.entries(reportData).forEach(([name, data]) => tbody.innerHTML += `<tr><td>${name}</td><td>${data.count}</td><td>${data.total} ج</td></tr>`);
         }
 
         document.getElementById('addUserBtn').addEventListener('click', () => { 
             let u=document.getElementById('newUName').value, p=document.getElementById('newUPass').value, r=document.getElementById('newURole').value; 
             if(u&&p){ push(ref(db,'users'),{name:u,pass:p,role:r}); alert('تمت الإضافة'); document.getElementById('newUName').value=''; document.getElementById('newUPass').value=''; }
         });
+
+        // --- UPDATED: Render Users with Online Status ---
         function renderUsers(data) { 
             const t=document.getElementById('usersListBody'); t.innerHTML=''; 
-            Object.entries(data).forEach(([k,u])=>{ if(u.role!=='customer') t.innerHTML+=`<tr><td><button class="btn-red" onclick="window.delUser('${k}')">حذف</button><button class="btn-warning" onclick="window.openEditUser('${k}')">تعديل</button></td><td>${u.role==='admin'?'مدير':'متلقي طلبات'}</td><td>${u.name}</td></tr>`; }); 
-        }
-        window.delUser=(k)=>confirm('حذف؟')&&remove(ref(db,'users/'+k));
-        window.openEditUser = function(key) {
-            const u = allUsersData[key]; if(!u) return; editingUserKey = key;
-            document.getElementById('editUName').value = u.name; document.getElementById('editUPass').value = u.pass; document.getElementById('editURole').value = u.role;
-            document.getElementById('userEditModal').style.display = 'flex';
-        }
-        window.saveUserEdit = function() {
-            if(!editingUserKey) return;
-            const n=document.getElementById('editUName').value, p=document.getElementById('editUPass').value, r=document.getElementById('editURole').value;
-            if(n && p) { update(ref(db, 'users/' + editingUserKey), { name: n, pass: p, role: r }).then(() => { alert("تم حفظ التعديلات"); document.getElementById('userEditModal').style.display = 'none'; editingUserKey = null; }); }
+            Object.entries(data).forEach(([k,u])=>{ 
+                if(u.role!=='customer') {
+                    // Check status
+                    const isOnline = u.state === 'online';
+                    const statusHtml = `<span class="status-dot ${isOnline ? 'status-online' : 'status-offline'}"></span> ${isOnline ? 'متصل' : 'غير متصل'}`;
+
+                    t.innerHTML+=`<tr>
+                        <td><button class="btn-red" onclick="window.delUser('${k}')">حذف</button><button class="btn-warning" onclick="window.openEditUser('${k}')">تعديل</button></td>
+                        <td>${u.role==='admin'?'مدير':'متلقي طلبات'}</td>
+                        <td>${u.name}</td>
+                        <td>${statusHtml}</td>
+                    </tr>`; 
+                }
+            }); 
         }
 
-        function handleChatUpdate(chats) {
-            renderChatList(chats);
-            if(chatsLoaded) {
-                let hasNew = false;
-                Object.values(chats).forEach(msgs => { const lastMsg = Object.values(msgs).pop(); if(lastMsg && lastMsg.sender === 'customer' && Date.now() - lastMsg.timestamp < 10000) hasNew = true; });
-                if(hasNew) { document.getElementById('msgSound').play().catch(()=>{}); document.getElementById('chatNotifyDot').style.display = 'block'; }
-            } else chatsLoaded = true;
-            if(activeChatUser) loadAdminChat(activeChatUser);
-        }
-        function renderChatList(d) {
-            document.getElementById('chatUsersList').innerHTML = Object.keys(d).map(k => {
-                const msgs = Object.values(d[k]); const last = msgs[msgs.length-1]; const isNew = last.sender === 'customer' ? 'has-new' : '';
-                return `<div class="chat-user-item ${isNew}" onclick="window.loadChat('${k}')"><span>${k}</span> <small>${last.text.substring(0,10)}...</small></div>`;
-            }).join('');
-        }
+        window.delUser=(k)=>confirm('حذف؟')&&remove(ref(db,'users/'+k));
+        window.openEditUser = function(key) { const u = allUsersData[key]; if(!u) return; editingUserKey = key; document.getElementById('editUName').value = u.name; document.getElementById('editUPass').value = u.pass; document.getElementById('editURole').value = u.role; document.getElementById('userEditModal').style.display = 'flex'; }
+        window.saveUserEdit = function() { if(!editingUserKey) return; const n=document.getElementById('editUName').value, p=document.getElementById('editUPass').value, r=document.getElementById('editURole').value; if(n && p) { update(ref(db, 'users/' + editingUserKey), { name: n, pass: p, role: r }).then(() => { alert("تم حفظ التعديلات"); document.getElementById('userEditModal').style.display = 'none'; editingUserKey = null; }); } }
+
+        function handleChatUpdate(chats) { renderChatList(chats); if(chatsLoaded) { let hasNew = false; Object.values(chats).forEach(msgs => { const lastMsg = Object.values(msgs).pop(); if(lastMsg && lastMsg.sender === 'customer' && Date.now() - lastMsg.timestamp < 10000) hasNew = true; }); if(hasNew) { document.getElementById('msgSound').play().catch(()=>{}); document.getElementById('chatNotifyDot').style.display = 'block'; } } else chatsLoaded = true; if(activeChatUser) loadAdminChat(activeChatUser); }
+        function renderChatList(d) { document.getElementById('chatUsersList').innerHTML = Object.keys(d).map(k => { const msgs = Object.values(d[k]); const last = msgs[msgs.length-1]; const isNew = last.sender === 'customer' ? 'has-new' : ''; return `<div class="chat-user-item ${isNew}" onclick="window.loadChat('${k}')"><span>${k}</span> <small>${last.text.substring(0,10)}...</small></div>`; }).join(''); }
         window.loadChat = (p) => { activeChatUser = p; onValue(ref(db,'chats/'+p), s => { document.getElementById('adminChatBox').innerHTML = Object.values(s.val()||{}).map(m=>`<div style="background:${m.sender==='admin'?'var(--blue)':'#ddd'};color:${m.sender==='admin'?'white':'black'};padding:8px;margin:5px;width:fit-content;border-radius:5px;align-self:${m.sender==='admin'?'flex-end':'flex-start'}">${m.text}</div>`).join(''); }); }
         window.sendAdminMsg = () => { let t=document.getElementById('adminChatInput').value; if(t&&activeChatUser){ push(ref(db,'chats/'+activeChatUser),{sender:'admin',text:t, timestamp:Date.now()}); document.getElementById('adminChatInput').value=''; } };
         document.getElementById('addVarBtn').addEventListener('click', () => { let b=document.getElementById('vType').value, s=document.getElementById('vSize').value, p=document.getElementById('vPrice').value; if(b && p) { tempVariants.push({bread:b,size:s||'موحد',price:parseInt(p)}); document.getElementById('tempVarsDisplay').innerHTML += `<span class="variant-tag">${b} (${s||'موحد'}) : ${p}ج</span>`; document.getElementById('vType').value=''; document.getElementById('vSize').value=''; document.getElementById('vPrice').value=''; } });
