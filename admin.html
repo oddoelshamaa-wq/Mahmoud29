@@ -47,16 +47,103 @@
         @keyframes flashOrange { from { box-shadow: 0 0 5px orange; } to { box-shadow: 0 0 15px orange; } }
         .cancel-badge { background: var(--red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; position: absolute; top: 10px; left: 10px; z-index: 10; }
 
-        /* Team Chat Styles */
-        .team-chat-container { display: flex; flex-direction: column; height: 75vh; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .team-chat-msgs { flex: 1; padding: 20px; overflow-y: auto; background: #eef2f5; border-radius: 10px 10px 0 0; }
-        .team-msg { margin-bottom: 10px; padding: 10px 15px; border-radius: 15px; width: fit-content; max-width: 70%; position: relative; }
-        .team-msg.mine { background: var(--blue); color: white; align-self: flex-end; margin-right: auto; } /* fix alignment logic in JS */
-        .team-msg.others { background: white; color: black; border: 1px solid #ddd; margin-left: auto; }
-        .msg-sender { font-size: 0.75rem; font-weight: bold; margin-bottom: 3px; display: block; opacity: 0.8; }
-        .comics-bar { padding: 10px; background: #fff; border-top: 1px solid #eee; display: flex; gap: 5px; overflow-x: auto; }
-        .comic-btn { font-size: 1.5rem; cursor: pointer; padding: 5px; transition: 0.2s; }
-        .comic-btn:hover { transform: scale(1.2); }
+        /* ========================================= */
+        /*        MODERN TEAM CHAT STYLES            */
+        /* ========================================= */
+        .team-chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 75vh;
+            background: #e5ddd5; /* WhatsApp BG Color */
+            /* نقشة خفيفة للخلفية */
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .team-chat-msgs {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Bubble Styles */
+        .team-msg {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 75%;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            word-wrap: break-word;
+        }
+
+        .team-msg.mine {
+            background: #dcf8c6; /* Green Bubble */
+            align-self: flex-end;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 0;
+            color: #333;
+        }
+        .team-msg.mine::after {
+            content: ""; position: absolute; bottom: 0; right: -10px; width: 20px; height: 20px;
+            background: radial-gradient(circle at top left, transparent, transparent 10px, #dcf8c6 10px);
+        }
+
+        .team-msg.others {
+            background: white; /* White Bubble */
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 15px;
+            color: #333;
+        }
+        .team-msg.others::after {
+            content: ""; position: absolute; bottom: 0; left: -10px; width: 20px; height: 20px;
+            background: radial-gradient(circle at top right, transparent, transparent 10px, white 10px);
+        }
+
+        .msg-sender { font-size: 0.75rem; font-weight: bold; color: #e67e22; margin-bottom: 4px; display: block; }
+        .msg-time { font-size: 0.65rem; color: #999; text-align: left; margin-top: 5px; display: block; }
+
+        /* Input Area */
+        .chat-input-area {
+            background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd;
+        }
+        .chat-input-area input { margin: 0; border-radius: 20px; border: none; padding: 12px 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        .chat-input-area button {
+            border-radius: 50%; width: 45px; height: 45px; padding: 0; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s;
+        }
+        .chat-input-area button:hover { transform: scale(1.1); }
+
+        /* Stickers Panel */
+        .stickers-panel {
+            height: 0; background: white; transition: 0.3s; overflow: hidden; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 0 10px;
+        }
+        .stickers-panel.open { height: 160px; padding: 10px; border-top: 1px solid #ccc; overflow-y: auto; }
+        .sticker-item { cursor: pointer; border-radius: 5px; transition: 0.2s; text-align: center; height: 70px; display: flex; align-items: center; justify-content: center; background: #eee; }
+        .sticker-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .sticker-item:hover { transform: scale(1.05); background: #ddd; }
+        .sticker-msg-img { max-width: 150px; border-radius: 10px; }
+
+        /* Shake Animation for Buzz */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-screen { animation: shake 0.5s; animation-iteration-count: 1; }
+
+        /* ========================================= */
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; justify-content: center; align-items: center; }
@@ -163,7 +250,7 @@
             </table>
         </div>
 
-        <!-- 3. Reports (Updated Date Range) -->
+        <!-- 3. Reports -->
         <div id="reports" class="section">
             <div class="form-box">
                 <h3>استخراج التقارير بالتاريخ</h3>
@@ -188,26 +275,33 @@
             </div>
         </div>
 
-        <!-- 4. Team Chat -->
+        <!-- 4. TEAM CHAT (MODERN & FUN) -->
         <div id="team-chat-section" class="section">
-            <h3>شات الفريق (داخلي)</h3>
+            <h3>قهوة الموظفين ☕ (شات الفريق)</h3>
             <div class="team-chat-container">
-                <div class="team-chat-msgs" id="teamChatBox">
-                    <!-- Msgs go here -->
+                
+                <!-- منطقة الرسائل -->
+                <div class="team-chat-msgs" id="teamChatBox"></div>
+
+                <!-- لوحة الستيكرز (مخفية افتراضياً) -->
+                <div class="stickers-panel" id="stickersPanel">
+                    <!-- ستيكرز مصرية مضحكة -->
+                    <div class="sticker-item" onclick="sendSticker('https://media.tenor.com/m8WGPrQ3qVMAAAAM/cat-dance.gif')"><img src="https://media.tenor.com/m8WGPrQ3qVMAAAAM/cat-dance.gif"></div>
+                    <div class="sticker-item" onclick="sendSticker('https://media.tenor.com/NBX02q0mQf0AAAAM/laughing.gif')"><img src="https://media.tenor.com/NBX02q0mQf0AAAAM/laughing.gif"></div>
+                    <div class="sticker-item" onclick="sendSticker('https://media.tenor.com/y3x5kLdMhFMAAAAM/thumbs-up.gif')"><img src="https://media.tenor.com/y3x5kLdMhFMAAAAM/thumbs-up.gif"></div>
+                    <div class="sticker-item" onclick="sendSticker('https://media.tenor.com/Jj3lYlXqQWAAAAAM/shocked.gif')"><img src="https://media.tenor.com/Jj3lYlXqQWAAAAAM/shocked.gif"></div>
+                    <div class="sticker-item" onclick="sendSticker('https://media.tenor.com/pU5d5f_W1V4AAAAM/angry.gif')"><img src="https://media.tenor.com/pU5d5f_W1V4AAAAM/angry.gif"></div>
+                    <div class="sticker-item" onclick="sendSticker('https://media.tenor.com/2s9aV2-t6C0AAAAM/sad-cry.gif')"><img src="https://media.tenor.com/2s9aV2-t6C0AAAAM/sad-cry.gif"></div>
+                    <div class="sticker-item" onclick="sendSticker('https://media.tenor.com/K1C8tGjK1uEAAAAM/no-way.gif')"><img src="https://media.tenor.com/K1C8tGjK1uEAAAAM/no-way.gif"></div>
+                    <div class="sticker-item" onclick="sendSticker('https://media.tenor.com/3936611593321153406/watching-you-bird.gif')"><img src="https://media.tenor.com/3936611593321153406/watching-you-bird.gif" title="عصفورة"></div>
                 </div>
-                <div class="comics-bar">
-                    <span class="comic-btn" onclick="addComic('👍')">👍</span>
-                    <span class="comic-btn" onclick="addComic('😂')">😂</span>
-                    <span class="comic-btn" onclick="addComic('🔥')">🔥</span>
-                    <span class="comic-btn" onclick="addComic('❤️')">❤️</span>
-                    <span class="comic-btn" onclick="addComic('🍔')">🍔</span>
-                    <span class="comic-btn" onclick="addComic('👀')">👀</span>
-                    <span class="comic-btn" onclick="addComic('🚀')">🚀</span>
-                    <span class="comic-btn" onclick="addComic('💀')">💀</span>
-                </div>
-                <div style="padding:10px; display:flex; gap:10px; background:white; border-radius: 0 0 10px 10px;">
-                    <input type="text" id="teamMsgInput" placeholder="اكتب رسالة لزملائك..." style="margin:0;">
-                    <button class="btn-blue" onclick="sendTeamMsg()">إرسال</button>
+
+                <!-- منطقة الأدوات والكتابة -->
+                <div class="chat-input-area">
+                    <button class="btn-warning" onclick="toggleStickers()" title="ستيكرز"><i class="far fa-smile-wink"></i></button>
+                    <button class="btn-red" onclick="sendBuzz()" title="نكز (رجرجة الشاشة)"><i class="fas fa-bolt"></i></button>
+                    <input type="text" id="teamMsgInput" placeholder="اكتب رسالة أو نكتة..." style="flex:1;" onkeypress="handleEnter(event)">
+                    <button class="btn-blue" onclick="sendTeamMsg()"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         </div>
@@ -326,6 +420,12 @@
         let editingUserKey = null;
         let unreadChatCount = 0;
 
+        // --- أصوات الهزار ---
+        const sfxLaugh = new Audio('https://www.myinstants.com/media/sounds/laughing-crowd-1.mp3');
+        const sfxApplaud = new Audio('https://www.myinstants.com/media/sounds/aplausos_2.mp3');
+        const sfxBuzz = new Audio('https://www.myinstants.com/media/sounds/nudge-msn.mp3'); // صوت النكز
+        const sfxRun = new Audio('https://www.myinstants.com/media/sounds/run-vine-sound-effect.mp3'); // صوت لما حد يقول عصفورة
+
         // Auto Login check
         if(currentUser) {
             loginSuccess(currentUser);
@@ -340,7 +440,6 @@
                 let foundKey = null;
                 const users = snap.val() || {};
                 
-                // Static Admin Fallback (Optional)
                 if(u === 'admin' && p === '123') found = {name: 'Admin', role: 'admin', key: 'static_admin'};
                 else {
                     Object.entries(users).forEach(([k, user]) => { 
@@ -361,7 +460,6 @@
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminNameDisplay').innerText = user.name;
             
-            // Set Online Status
             if(user.key && user.key !== 'static_admin') {
                 const presenceRef = ref(db, 'users/' + user.key + '/online');
                 set(presenceRef, true);
@@ -418,39 +516,119 @@
             onValue(ref(db, 'team_chat'), (s) => renderTeamChat(s.val() || {}));
         }
 
-        // --- Team Chat Logic (Internal) ---
+        // --- Modern Team Chat Logic ---
         function renderTeamChat(msgs) {
             const box = document.getElementById('teamChatBox');
+            // Check if user is scrolled to bottom
+            const isAtBottom = box.scrollHeight - box.scrollTop === box.clientHeight;
+            
             box.innerHTML = '';
-            Object.values(msgs).forEach(m => {
+            
+            // Sort messages
+            const msgsList = Object.values(msgs).sort((a,b) => a.timestamp - b.timestamp);
+
+            msgsList.forEach(m => {
                 const isMe = m.sender === currentUser.name;
+                
+                // 1. معالجة النكز (Buzz)
+                if (m.type === 'buzz') {
+                    if (!m.played && Date.now() - m.timestamp < 2000) {
+                        playBuzzEffect();
+                        m.played = true; 
+                    }
+                    // لا تعرض نص "buzz" بل رسالة نظام صغيرة
+                    box.innerHTML += `<div style="text-align:center; color:#999; font-size:0.8rem; margin:5px;">⚡ ${m.sender} عمل نكز للجميع ⚡</div>`;
+                    return; 
+                }
+
+                // 2. تشغيل أصوات الكلمات المضحكة
+                if (Date.now() - m.timestamp < 3000 && !isMe) {
+                     checkFunnySounds(m.text);
+                }
+
+                const timeStr = new Date(m.timestamp).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+
                 box.innerHTML += `
                     <div style="display:flex; flex-direction:column; ${isMe?'align-items:flex-end':'align-items:flex-start'}">
-                        <div class="team-msg ${isMe?'mine':'others'}">
+                        <div class="team-msg ${isMe ? 'mine' : 'others'}">
                             <span class="msg-sender">${m.sender}</span>
-                            ${m.text}
+                            <div class="msg-content">${m.text}</div>
+                            <span class="msg-time">${timeStr}</span>
                         </div>
                     </div>`;
             });
+            
             box.scrollTop = box.scrollHeight;
         }
 
+        // إرسال رسالة
         window.sendTeamMsg = function() {
             const inp = document.getElementById('teamMsgInput');
             const txt = inp.value.trim();
             if(!txt) return;
+            
             push(ref(db, 'team_chat'), {
                 sender: currentUser.name,
                 text: txt,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                type: 'text'
             });
             inp.value = '';
         }
 
-        window.addComic = function(emoji) {
-            const inp = document.getElementById('teamMsgInput');
-            inp.value += emoji + ' ';
-            inp.focus();
+        // إرسال ستيكر
+        window.sendSticker = function(url) {
+            const imgTag = `<img src="${url}" class="sticker-msg-img">`;
+            push(ref(db, 'team_chat'), {
+                sender: currentUser.name,
+                text: imgTag,
+                timestamp: Date.now(),
+                type: 'sticker'
+            });
+            toggleStickers(); 
+        }
+
+        // إرسال نكز
+        window.sendBuzz = function() {
+            push(ref(db, 'team_chat'), {
+                sender: currentUser.name,
+                text: 'buzz',
+                timestamp: Date.now(),
+                type: 'buzz'
+            });
+        }
+
+        // تأثير النكز
+        function playBuzzEffect() {
+            sfxBuzz.play().catch(()=>{});
+            document.body.classList.add('shake-screen');
+            setTimeout(() => {
+                document.body.classList.remove('shake-screen');
+            }, 500);
+        }
+
+        // أصوات الضحك والكلمات
+        function checkFunnySounds(text) {
+            if(!text) return;
+            const t = text.toLowerCase();
+            
+            if(t.includes('هههه') || t.includes('haha') || t.includes('ضحك')) {
+                sfxLaugh.currentTime = 0; sfxLaugh.play().catch(()=>{});
+            }
+            if(t.includes('عاش') || t.includes('بطل') || t.includes('الله ينور')) {
+                sfxApplaud.currentTime = 0; sfxApplaud.play().catch(()=>{});
+            }
+            if(t.includes('عصفورة') || t.includes('المدير') || t.includes('جاي')) {
+                sfxRun.currentTime = 0; sfxRun.play().catch(()=>{});
+            }
+        }
+
+        window.toggleStickers = function() {
+            document.getElementById('stickersPanel').classList.toggle('open');
+        }
+
+        window.handleEnter = function(e) {
+            if(e.key === 'Enter') window.sendTeamMsg();
         }
 
         // --- Orders Logic ---
@@ -559,19 +737,14 @@
                 </tr>`).join('');
         }
 
-        // --- Reports Logic (Range) ---
         window.generateReport = function() {
             const startVal = document.getElementById('reportStartDate').value;
             const endVal = document.getElementById('reportEndDate').value;
-
             if(!startVal || !endVal) return alert("الرجاء تحديد التاريخ من وإلى");
-
             const startDate = new Date(startVal).setHours(0,0,0,0);
             const endDate = new Date(endVal).setHours(23,59,59,999);
-
             const reportData = {};
             let grandTotal = 0;
-
             Object.values(allOrders).forEach(o => {
                 if(o.status === 'completed') {
                     const d = new Date(o.timestamp).getTime();
@@ -585,15 +758,12 @@
                     }
                 }
             });
-
             document.getElementById('repStartTxt').innerText = startVal;
             document.getElementById('repEndTxt').innerText = endVal;
             document.getElementById('reportResult').style.display = 'block';
             document.getElementById('grandTotalRep').innerText = grandTotal;
-            
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
-            
             if(Object.keys(reportData).length === 0) {
                 tbody.innerHTML = '<tr><td colspan="3">لا توجد مبيعات في هذه الفترة</td></tr>';
             } else {
@@ -603,7 +773,6 @@
             }
         }
 
-        // --- User Management & Status ---
         document.getElementById('addUserBtn').addEventListener('click', () => { 
             let u=document.getElementById('newUName').value, p=document.getElementById('newUPass').value, r=document.getElementById('newURole').value; 
             if(u&&p){ push(ref(db,'users'),{name:u,pass:p,role:r}); alert('تمت الإضافة'); document.getElementById('newUName').value=''; document.getElementById('newUPass').value=''; }
@@ -614,11 +783,9 @@
             t.innerHTML=''; 
             Object.entries(data).forEach(([k,u])=>{ 
                 if(u.role!=='customer') {
-                    // Check online
                     const onlineBadge = u.online 
                         ? `<span style="color:var(--green); font-weight:bold;"><span class="status-dot online"></span> متصل</span>` 
                         : `<span style="color:grey;"><span class="status-dot"></span> غير متصل</span>`;
-
                     t.innerHTML+=`
                     <tr>
                         <td style="text-align:right; padding-right:20px;">
@@ -659,28 +826,21 @@
             }
         }
 
-        // --- Customer Chat (Notifications) ---
         function handleChatUpdate(chats) {
             renderChatList(chats);
-            
-            // Notification Logic
             let newMsgFound = false;
             let currentUnread = 0;
-
             Object.values(chats).forEach(msgs => {
                 const lastMsg = Object.values(msgs).pop();
-                // Logic: If last msg is from customer and very recent (10s) -> play sound
                 if(lastMsg && lastMsg.sender === 'customer') {
-                    currentUnread++; // Simplified unread count logic
+                    currentUnread++;
                     if(Date.now() - lastMsg.timestamp < 10000 && chatsLoaded) {
                         newMsgFound = true;
                     }
                 }
             });
-            
             unreadChatCount = currentUnread;
             updateChatBadge();
-
             if(!chatsLoaded) chatsLoaded = true;
             if(newMsgFound) {
                 document.getElementById('msgSound').play().catch(()=>{});
@@ -691,10 +851,7 @@
         function updateChatBadge() {
             const badge = document.getElementById('chatNotifyBadge');
             const item = document.getElementById('chatMenuItem');
-            
-            // Only show count if we are NOT currently in the chat section
             const isChatActive = item.classList.contains('active');
-            
             if(unreadChatCount > 0 && !isChatActive) {
                 badge.style.display = 'inline-block';
                 badge.innerText = unreadChatCount;
@@ -716,7 +873,6 @@
         window.loadChat = (p) => { activeChatUser = p; onValue(ref(db,'chats/'+p), s => { document.getElementById('adminChatBox').innerHTML = Object.values(s.val()||{}).map(m=>`<div style="background:${m.sender==='admin'?'var(--blue)':'#ddd'};color:${m.sender==='admin'?'white':'black'};padding:8px;margin:5px;width:fit-content;border-radius:5px;align-self:${m.sender==='admin'?'flex-end':'flex-start'}">${m.text}</div>`).join(''); }); }
         window.sendAdminMsg = () => { let t=document.getElementById('adminChatInput').value; if(t&&activeChatUser){ push(ref(db,'chats/'+activeChatUser),{sender:'admin',text:t, timestamp:Date.now()}); document.getElementById('adminChatInput').value=''; } };
 
-        // --- Categories Management ---
         document.getElementById('addCatBtn').addEventListener('click', () => { 
             let n=document.getElementById('catMain').value; 
             if(n){ push(ref(db,'categories'),{name:n}); alert('تم'); document.getElementById('catMain').value=''; } 
@@ -727,21 +883,9 @@
             const list = document.getElementById('catManageList');
             s.innerHTML='<option value="" disabled selected>اختر التصنيف</option>'; 
             list.innerHTML = '';
-
             Object.entries(data).forEach(([k, c])=>{
-                // For Dropdown
                 s.innerHTML+=`<option value="${c.name}">${c.name}</option>`;
-                
-                // For Management Table
-                list.innerHTML += `
-                    <tr>
-                        <td><input type="text" value="${c.name}" id="cat-name-${k}" style="margin:0; text-align:center;"></td>
-                        <td>
-                            <button class="btn-blue" onclick="window.updateCat('${k}')">حفظ</button>
-                            <button class="btn-red" onclick="window.delCat('${k}')">حذف</button>
-                        </td>
-                    </tr>
-                `;
+                list.innerHTML += `<tr><td><input type="text" value="${c.name}" id="cat-name-${k}" style="margin:0; text-align:center;"></td><td><button class="btn-blue" onclick="window.updateCat('${k}')">حفظ</button><button class="btn-red" onclick="window.delCat('${k}')">حذف</button></td></tr>`;
             }); 
         }
 
@@ -753,7 +897,6 @@
             if(confirm('سيتم حذف التصنيف، متأكد؟')) remove(ref(db, 'categories/'+k));
         }
 
-        // --- Products Logic ---
         document.getElementById('addVarBtn').addEventListener('click', () => { let b=document.getElementById('vType').value, s=document.getElementById('vSize').value, p=document.getElementById('vPrice').value; if(b && p) { tempVariants.push({bread:b,size:s||'موحد',price:parseInt(p)}); document.getElementById('tempVarsDisplay').innerHTML += `<span class="variant-tag" style="background:#eee; padding:5px; margin:2px; border-radius:3px;">${b} (${s||'موحد'}) : ${p}ج</span>`; document.getElementById('vType').value=''; document.getElementById('vSize').value=''; document.getElementById('vPrice').value=''; } });
         document.getElementById('saveProdBtn').addEventListener('click', () => { let n=document.getElementById('prodName').value, i=document.getElementById('prodImg').value, c=document.getElementById('prodCatSelect').value; if(n && tempVariants.length) { push(ref(db,'products'),{name:n,img:i,cat:c,variants:tempVariants,available:true}); alert('تم'); tempVariants=[]; document.getElementById('prodName').value=''; document.getElementById('tempVarsDisplay').innerHTML=''; } });
         function renderProdManage(data) { document.getElementById('manageProdList').innerHTML=Object.entries(data).map(([k,p])=>`<tr><td>${p.name}</td><td>${p.available?'متاح':'مغلق'}</td><td><button class="btn-blue" onclick="window.tog('${k}',${p.available})">تغيير</button><button class="btn-red" onclick="window.delP('${k}')">حذف</button></td></tr>`).join(''); }
