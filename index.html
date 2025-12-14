@@ -9,7 +9,30 @@
     <style>
         :root { --blue: #1a237e; --dark-blue: #0d1b6e; --red: #b71c1c; --white: #ffffff; --bg-gray: #f4f6f8; --text: #333; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Cairo', sans-serif; margin: 0; background: var(--bg-gray); padding-bottom: 0; }
+        body { font-family: 'Cairo', sans-serif; margin: 0; background: var(--bg-gray); padding-bottom: 0; overflow-x: hidden; }
+        
+        /* --- LOADER STYLES (Fixed to match request) --- */
+        #loader-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff; z-index: 99999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        .loader-content { position: relative; width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; }
+        .loader-logo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; animation: logoPulse 2s infinite ease-in-out; position: relative; z-index: 2; border: 4px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .loader-spinner {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border: 3px solid transparent; border-top-color: var(--blue); border-bottom-color: var(--red);
+            border-radius: 50%; animation: spin 1.5s linear infinite; z-index: 1;
+        }
+        .loader-text { margin-top: 20px; font-size: 1.5rem; font-weight: 800; color: var(--blue); letter-spacing: 2px; animation: textFade 2s infinite alternate; }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes logoPulse { 0% { transform: scale(0.95); } 50% { transform: scale(1.05); } 100% { transform: scale(0.95); } }
+        @keyframes textFade { from { opacity: 0.5; } to { opacity: 1; } }
+        .hide-loader { opacity: 0; visibility: hidden; }
+
+        /* General UI */
         header { background: linear-gradient(135deg, #1a237e 0%, #283593 100%); color: var(--white); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); height: 70px; }
         .logo-img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: white; }
         .user-controls { display: flex; gap: 15px; align-items: center; }
@@ -44,11 +67,21 @@
         .chat-window { display: none; position: fixed; bottom: 100px; left: 20px; width: 300px; height: 400px; background: white; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); z-index: 2000; flex-direction: column; overflow: hidden; border: 1px solid #eee; }
         .option-item { padding: 15px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; transition: 0.2s; }
         .option-item.selected { border: 2px solid var(--blue); background: #f0f7ff; }
-        .cancel-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px; }
+        .cancel-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px; width: 100%; }
         .item-note-input { width: 100%; border: 1px solid #ccc; border-radius: 8px; padding: 10px; font-family: 'Cairo'; margin-bottom: 10px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
+
+    <!-- Loader -->
+    <div id="loader-wrapper">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <img src="https://scontent.fcai20-3.fna.fbcdn.net/v/t39.30808-6/374567354_674327448061584_5979966477678462692_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=FrSE9MWl_6QQ7kNvwFAhUPI&_nc_oc=AdngfO4ff4o0AxSljHVhHGAePUVZNEldFjkcBsv_8eQHPfm9ij4TVXXKAhVa_6BsBjk&_nc_zt=23&_nc_ht=scontent.fcai20-3.fna&_nc_gid=TQzikFqmvYqvF2LOrq__Ng&oh=00_AfnWFPsTcAl4x79UCBVaeSyBIxtONCa4PSqLWNhw7aGh5Q&oe=6942B46F" class="loader-logo" alt="Nagaf Logo">
+        </div>
+        <div class="loader-text">N A G A F</div>
+    </div>
+
     <audio id="msgSound" src="https://assets.mixkit.co/active_storage/sfx/2346/2346-preview.mp3"></audio>
 
     <header>
@@ -68,11 +101,11 @@
     
     <footer>
         <div class="footer-hotline"><i class="fas fa-headset"></i> 19971</div>
-     <div class="footer-icons">
-    <a href="https://wa.me/201119008397" target="_blank"><i class="fab fa-whatsapp"></i></a>
-    <a href="https://www.facebook.com/NagafRestaurants/" target="_blank"><i class="fab fa-facebook-f"></i></a>
-</div>
-        <div class="footer-copy">نجف | 2025</div>
+        <div class="footer-icons">
+            <a href="https://wa.me/201119008397" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.facebook.com/NagafRestaurants/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        </div>
+        <div class="footer-copy">نجف | 1958</div>
     </footer>
     
     <!-- Modals -->
@@ -82,17 +115,13 @@
     
     <div class="modal" id="successModal"><div class="modal-content" style="text-align:center;"><i class="fas fa-check-circle" style="font-size:4rem;color:#27ae60;margin-bottom:15px;display:block;"></i><h3 style="color:var(--blue);margin:10px 0;">تم الإرسال بنجاح!</h3><p style="color:#555;font-size:1.1rem;">سيتم مراجعة النطاق الجغرافي وتأكيد الطلب.</p><button class="btn-main" onclick="closeSuccessModal()">حسناً</button></div></div>
     
-    <!-- نافذة الخيارات (تم التعديل لإضافة الملاحظات) -->
     <div class="modal" id="optionsModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('optionsModal')">&times;</span>
             <h3 id="optProdName" style="color:var(--blue);text-align:center;margin-top:0;"></h3>
             <div id="variantsList" style="margin:15px 0;max-height:200px;overflow-y:auto;"></div>
-            
-            <!-- هنا مكان كتابة الملاحظات -->
             <label style="font-weight:bold;display:block;margin-bottom:5px;">ملاحظات خاصة:</label>
             <input type="text" id="itemNote" class="item-note-input" placeholder="مثال: بدون بصل، زيادة طحينة...">
-            
             <h4 style="text-align:center;margin:10px 0;">السعر: <span id="selectedPrice" style="color:var(--red);font-size:1.2rem;">0</span> ج</h4>
             <button class="btn-main" onclick="confirmAddToCart()">أضف للسلة</button>
         </div>
@@ -102,7 +131,6 @@
     
     <div class="modal" id="ordersModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('ordersModal')">&times;</span><h2 style="text-align:center;color:var(--blue);">طلباتي السابقة</h2><div id="ordersList" style="max-height:60vh;overflow-y:auto;background:#f9f9f9;padding:10px;border-radius:10px;"></div></div></div>
     
-    <!-- Chat -->
     <div class="chat-float" id="chatFloat" onclick="toggleChat()"><i class="fas fa-headset"></i></div>
     <div class="chat-window" id="chatWindow"><div style="background:var(--blue);color:white;padding:12px;display:flex;justify-content:space-between;"><span style="font-weight:bold;">خدمة العملاء</span><span onclick="toggleChat()" style="cursor:pointer;">✖</span></div><div id="chatBody" style="flex:1;padding:10px;overflow-y:auto;background:#f9f9f9;display:flex;flex-direction:column;gap:8px;"></div><div style="padding:10px;border-top:1px solid #ddd;display:flex;"><input type="text" id="chatInput" placeholder="اكتب..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:20px;margin-left:5px;"><button onclick="sendChat()" style="background:var(--blue);color:white;border:none;width:35px;height:35px;border-radius:50%;"><i class="fas fa-paper-plane"></i></button></div></div>
 
@@ -114,6 +142,15 @@
         const app = initializeApp(firebaseConfig); 
         const db = getDatabase(app);
         
+        // --- Loader Logic (Simulate delay like reference) ---
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('loader-wrapper');
+            setTimeout(() => {
+                loader.classList.add('hide-loader');
+                setTimeout(() => { loader.style.display = 'none'; }, 800);
+            }, 2500); 
+        });
+
         let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null;
 
         onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
@@ -144,7 +181,6 @@
         }
         function setupUserUI(){ document.getElementById('loginBtnNav').style.display='none'; document.getElementById('userProfileNav').style.display='flex'; }
 
-        // فتح نافذة الخيارات + تصفير الملاحظات
         window.openOptions=function(n){
             selectedProductTemp=products.find(p=>p.name===n); 
             document.getElementById('optProdName').innerText=n;
@@ -154,10 +190,7 @@
                 l.innerHTML+=`<div class="option-item" onclick="selectVar(${i},this)"><div class="option-details"><b>${v.bread}${sizeTxt}</b></div><div style="font-weight:bold;color:var(--red)">${v.price} ج</div></div>`;
             });
             if(l.children[0]) window.selectVar(0,l.children[0]);
-            
-            // تفريغ خانة الملاحظات
             document.getElementById('itemNote').value = '';
-            
             document.getElementById('optionsModal').style.display='flex';
         }
 
@@ -166,19 +199,12 @@
             selectedVariantTemp=selectedProductTemp.variants[i]; document.getElementById('selectedPrice').innerText=selectedVariantTemp.price; 
         }
 
-        // إضافة للسلة مع الملاحظة
         window.confirmAddToCart=function(){ 
             let noteTxt = document.getElementById('itemNote').value;
-            cart.push({
-                ...selectedProductTemp,
-                variant: selectedVariantTemp,
-                note: noteTxt
-            }); 
-            updateCart(); 
-            closeModal('optionsModal'); 
+            cart.push({ ...selectedProductTemp, variant: selectedVariantTemp, note: noteTxt }); 
+            updateCart(); closeModal('optionsModal'); 
         }
 
-        // تحديث عرض السلة لإظهار الملاحظات
         function updateCart(){ 
             document.getElementById('cartCount').innerText=cart.length; 
             const d=document.getElementById('cartItems'); 
@@ -200,12 +226,12 @@
         window.submitOrder=function(){
             if(!currentUser){ closeModal('cartModal'); return openAuth(); }
             if(!cart.length) return alert('السلة فارغة');
-            // الملاحظات سترسل تلقائيا لأنها جزء من object الـ cart
             push(ref(db,'orders'),{customerName:currentUser.name,phone:currentUser.phone,address:currentUser.address,items:cart,total:parseInt(document.getElementById('cartTotal').innerText),status:'pending',timestamp:Date.now(),seenByAdmin:false})
             .then(()=>{ closeModal('cartModal'); cart=[]; updateCart(); document.getElementById('successModal').style.display='flex'; }).catch(()=>alert('خطأ'));
         }
         window.closeSuccessModal=()=>{ document.getElementById('successModal').style.display='none'; window.openMyOrders(); }
         
+        // --- Order History & Cancellation Logic ---
         window.openMyOrders=function(){
             if(!currentUser) return openAuth();
             onValue(ref(db,'orders'),(s)=>{
@@ -217,21 +243,26 @@
                     let st = o.status==='pending' ? 'جاري مراجعة النطاق...' : (o.status==='processing'?'جاري التحضير':(o.status==='completed'?'مكتمل':'ملغي'));
                     let clr = o.status==='completed'?'green':(o.status==='cancelled'?'red':'orange');
                     
+                    // منطق زر الإلغاء: يظهر فقط في حال كان الطلب جديد أو قيد المراجعة
                     let cancelInfo = '';
                     if (o.status === 'pending' || o.status === 'new') {
-                        if (o.cancelRequest) cancelInfo = '<span style="color:orange; font-size:0.8rem;">جاري مراجعة طلب الإلغاء...</span>';
-                        else cancelInfo = `<button class="cancel-btn" onclick="window.requestCancel('${o.key}')">إلغاء الطلب</button>`;
+                        if (o.cancelRequest) {
+                            cancelInfo = '<span style="color:#d35400; font-size:0.8rem; font-weight:bold;"><i class="fas fa-clock"></i> في انتظار موافقة الإدارة على الإلغاء...</span>';
+                        } else {
+                            cancelInfo = `<button class="cancel-btn" onclick="window.requestCancel('${o.key}')">إلغاء الطلب</button>`;
+                        }
                     }
-                    
+
+                    // عرض سبب الإلغاء إذا تم رفضه أو إلغاؤه من الإدارة
                     let reasonHTML = '';
                     if(o.status === 'cancelled' && o.adminReason) {
-                        reasonHTML = `<div style="background:#ffebee; color:#c62828; padding:5px; margin-top:5px; border-radius:5px; font-size:0.9rem;">سبب الإلغاء: ${o.adminReason}</div>`;
+                        reasonHTML = `<div style="background:#ffebee; color:#c62828; padding:5px; margin-top:5px; border-radius:5px; font-size:0.9rem;"><strong>سبب الإلغاء:</strong> ${o.adminReason}</div>`;
                     }
 
                     l.innerHTML+=`
                     <div style="background:white;padding:10px;margin-bottom:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
                         <b>${o.total} ج</b> - <span style="color:${clr}">${st}</span>
-                        <br><small>${new Date(o.timestamp).toLocaleString()}</small>
+                        <br><small>${new Date(o.timestamp).toLocaleString('ar-EG')}</small>
                         ${reasonHTML}
                         <br>${cancelInfo}
                     </div>`; 
@@ -241,11 +272,14 @@
         }
 
         window.requestCancel = function(key) {
-            let reason = prompt("يرجى كتابة سبب الإلغاء:");
-            if(reason) { update(ref(db, 'orders/'+key), { cancelRequest: true, cancelReason: reason }); alert("تم إرسال طلب الإلغاء للمطعم"); }
+            let reason = prompt("ما هو سبب رغبتك في إلغاء الطلب؟");
+            if(reason) {
+                update(ref(db, 'orders/'+key), { cancelRequest: true, cancelReason: reason })
+                .then(() => alert("تم إرسال طلب الإلغاء للمطعم، يرجى الانتظار للموافقة."))
+                .catch((e) => alert("حدث خطأ"));
+            }
         }
 
-        // --- Chat with Sound ---
         let chatInitialized = false;
         function initChatListener() {
             if(!currentUser) return;
@@ -254,7 +288,6 @@
                 const chatBody = document.getElementById('chatBody');
                 chatBody.innerHTML = msgs.map(m=>`<div style="align-self:${m.sender==='customer'?'flex-start':'flex-end'};background:${m.sender==='customer'?'var(--blue)':'#ddd'};color:${m.sender==='customer'?'white':'black'};padding:8px 12px;border-radius:12px;margin:2px;max-width:85%;">${m.text}</div>`).join('');
                 chatBody.scrollTop = chatBody.scrollHeight;
-
                 if(chatInitialized) {
                     const last = msgs[msgs.length-1];
                     if(last && last.sender === 'admin' && Date.now() - last.timestamp < 10000) {
@@ -273,5 +306,5 @@
         }
         window.sendChat=()=>{ let t=document.getElementById('chatInput').value; if(t&&currentUser){ push(ref(db,'chats/'+currentUser.phone),{sender:'customer',text:t, timestamp:Date.now()}); document.getElementById('chatInput').value=''; } else if(!currentUser) openAuth(); }
     </script>
-</body>
+</body> 
 </html>
