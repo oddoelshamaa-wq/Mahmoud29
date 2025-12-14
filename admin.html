@@ -114,13 +114,9 @@
             position: fixed; top: 20px; right: 20px; background: #333; color: #fff; 
             padding: 15px; border-radius: 5px; z-index: 100000; display: flex; align-items: center; gap: 10px;
             animation: slideIn 0.5s ease-out; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            border-right: 5px solid var(--red);
+            border-right: 5px solid var(--red); max-width: 300px; line-height: 1.5;
         }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        
-        @keyframes shakeHead {
-            0% { transform: translateX(0) } 25% { transform: translateX(5px) } 50% { transform: translateX(-5px) } 75% { transform: translateX(5px) } 100% { transform: translateX(0) }
-        }
     </style>
 </head>
 <body>
@@ -136,7 +132,8 @@
 
     <audio id="alarmSound" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" loop></audio>
     <audio id="msgSound" src="https://assets.mixkit.co/active_storage/sfx/2346/2346-preview.mp3"></audio>
-    <audio id="khasmSound" src="https://www.myinstants.com/media/sounds/36253456345.mp3"></audio> <!-- صوت كوميدي -->
+    <audio id="khasmSound" src="https://www.myinstants.com/media/sounds/36253456345.mp3"></audio>
+    <audio id="asfouraSound" src="https://www.myinstants.com/media/sounds/bird-chirping.mp3"></audio>
 
     <div id="loginScreen">
         <h1>بوابة الموظفين - نجف</h1>
@@ -167,12 +164,12 @@
             <span class="notification-dot" id="chatNotifyDot"></span>
         </div>
 
-        <!-- منطقة الضحك والترويق (صاحب الشغل والموظفين) -->
+        <!-- منطقة الضحك والترويق -->
         <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; padding-top: 10px;">
             <div class="menu-item" id="bonusBtn" onmouseover="runAway(this)">
                 <i class="fas fa-money-bill-wave"></i> طلب سلفة/مكافأة 💸
             </div>
-            <div class="menu-item" onclick="activateAsfoura()">
+            <div class="menu-item" onclick="openAsfouraModal()">
                 <i class="fas fa-crow"></i> شغل العصفورة 🐦
             </div>
              <div class="menu-item" onclick="activateKhasm()">
@@ -301,7 +298,6 @@
             <h2 style="color:var(--blue); text-align:center;">تفاصيل الطلب</h2>
             <div id="modalBody"></div>
             
-            <!-- تنبيه طلب الإلغاء -->
             <div id="cancelAlert" style="display:none; background:#fff3cd; color:#856404; padding:15px; margin:10px 0; border:1px solid #ffeeba; border-radius:5px;">
                 <strong><i class="fas fa-exclamation-triangle"></i> تنبيه:</strong> العميل يطلب إلغاء هذا الأوردر!
                 <div style="margin-top:5px;"><strong>السبب:</strong> <span id="cancelReasonText"></span></div>
@@ -309,6 +305,26 @@
 
             <div id="modalActions" style="display:flex; justify-content:center; gap:10px; margin-top:20px;"></div>
             <button onclick="document.getElementById('orderModal').style.display='none'" style="width:100%; margin-top:10px; background:#ccc; color:black;">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- Modal Asfoura (العصفورة) -->
+    <div class="modal" id="asfouraModal">
+        <div class="modal-content">
+            <h2 style="color:var(--blue); text-align:center;">🐦 لوحة تحكم العصفورة</h2>
+            
+            <label>مين اللي بيزوق / عامل مصيبة؟</label>
+            <input type="text" id="victimName" placeholder="اكتب اسم الضحية...">
+            
+            <label>عايز تفضحه عند مين؟</label>
+            <select id="snitchTarget">
+                <option value="all">الكل (فضيحة بجلاجل) 📢</option>
+                <option value="admin">المدير بس (في السر) 🤫</option>
+                <option value="victim">الضحية بس (رعب نفسي) 👻</option>
+            </select>
+
+            <button class="btn-red" style="width:100%; margin-top:10px;" onclick="sendSnitch()">طيّر العصفورة</button>
+            <button onclick="document.getElementById('asfouraModal').style.display='none'" style="width:100%; margin-top:10px; background:#ccc; color:black;">إلغاء</button>
         </div>
     </div>
 
@@ -331,7 +347,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, set, update, onValue, remove, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyAaf3l8VFttOCruK9jZczBsi1eBwg2U5yE", authDomain: "nagaf-f9b1c.firebaseapp.com", projectId: "nagaf-f9b1c", databaseURL: "https://nagaf-f9b1c-default-rtdb.firebaseio.com", storageBucket: "nagaf-f9b1c.appspot.com", messagingSenderId: "840123927886", appId: "1:840123927886:web:c6baad7f059cfab461e21f" };
         const app = initializeApp(firebaseConfig);
@@ -353,10 +369,11 @@
         let allUsersData = {};
         let chatsLoaded = false;
         let editingUserKey = null;
+        let loginTime = Date.now(); // عشان الإشعارات القديمة متظهرش
 
         if(currentUser) {
             document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('adminNameDisplay').innerText = currentUser.name; // الاسم الطبيعي
+            document.getElementById('adminNameDisplay').innerText = currentUser.name; 
             updateUIByRole();
             startSystem();
         }
@@ -391,39 +408,47 @@
             btn.style.position = 'fixed';
             btn.style.left = x + 'px';
             btn.style.top = y + 'px';
-            btn.style.background = '#8c0104'; // يحمر لما يهرب
+            btn.style.background = '#8c0104'; 
             btn.innerText = "مش هتلحقني 🏃‍♂️";
         }
 
-        // --- 2. كود العصفورة (Random Snitch) ---
-        window.activateAsfoura = function() {
-            // نختار اسم عشوائي من اللي شغالين معانا
-            const usersNames = Object.values(allUsersData).map(u => u.name);
-            if(usersNames.length === 0) usersNames.push("أنت شخصياً");
-            const victim = usersNames[Math.floor(Math.random() * usersNames.length)];
+        // --- 2. كود العصفورة المتطور (Real-time Snitch) ---
+        window.openAsfouraModal = function() {
+            document.getElementById('asfouraModal').style.display = 'flex';
+        }
+
+        window.sendSnitch = function() {
+            const victim = document.getElementById('victimName').value.trim();
+            const target = document.getElementById('snitchTarget').value;
             
-            showToast(`🐦 العصفورة بتقول إن <strong>${victim}</strong> بيلعب في الموبايل!`, "blue");
+            if(!victim) return alert("لازم تكتب اسم الضحية!");
+
+            // إرسال الإشعار للداتابيز عشان يظهر عند الناس
+            push(ref(db, 'system_notifications'), {
+                type: 'snitch',
+                victim: victim,
+                target: target, // all, admin, victim
+                sender: currentUser.name,
+                timestamp: Date.now()
+            });
+
+            document.getElementById('asfouraModal').style.display = 'none';
+            document.getElementById('victimName').value = '';
+            alert("تم تطيير العصفورة بنجاح 🐦✈️");
         }
 
         // --- 3. كود الخصم (Ekhsemlo) ---
         window.activateKhasm = function() {
-            // تشغيل صوت بسيط (لو متاح) أو رسالة
              document.getElementById('khasmSound').play().catch(()=>{});
-            
-            const reasons = [
-                "عشان واقف عوج", 
-                "بسبب التأخير في الرد", 
-                "عشان شربت شاي لوحدك", 
-                "قرار سيادي من الإدارة",
-                "هو كدا غلاسة"
-            ];
+            const reasons = ["عشان واقف عوج", "بسبب التأخير في الرد", "عشان شربت شاي لوحدك", "قرار سيادي من الإدارة"];
             const reason = reasons[Math.floor(Math.random() * reasons.length)];
             const amount = Math.floor(Math.random() * 50) + 10;
             
+            // خصم محلي (تظهر للشخص اللي داس بس كنوع من الهزار)
             showToast(`✂️ تم خصم <strong>${amount} جنيه</strong> ${reason}!`, "red");
         }
 
-        // --- 4. كود الشكوى في المدير ---
+        // --- 4. كود الشكوى ---
         window.complainBoss = function() {
             let complaint = prompt("اكتب شكوتك في المدير بمنتهى الصراحة (السرية مضمونة 😈):");
             if(complaint) {
@@ -434,21 +459,49 @@
             }
         }
 
-        // دالة لعرض الإشعارات الكوميدية
+        // --- الاستماع للإشعارات (عشان العصفورة تظهر عند الناس) ---
+        function listenToNotifications() {
+            onChildAdded(ref(db, 'system_notifications'), (snapshot) => {
+                const notif = snapshot.val();
+                
+                // تجاهل الإشعارات القديمة (قبل ما أعمل لوجن)
+                if(notif.timestamp < loginTime) return;
+
+                if(notif.type === 'snitch') {
+                    let shouldShow = false;
+                    let msg = "";
+
+                    // تحديد مين يشوف الرسالة
+                    if(notif.target === 'all') {
+                        shouldShow = true; // الكل يشوفها
+                        msg = `🐦 <strong>عاجل (فضيحة):</strong> العصفورة بتقول إن <strong>${notif.victim}</strong> بيزوق من الشغل!`;
+                    } else if (notif.target === 'admin' && currentUser.role === 'admin') {
+                        shouldShow = true; // الأدمن بس يشوفها
+                        msg = `🐦 <strong>تقرير سري:</strong> الموظف <strong>${notif.sender}</strong> بيبلغ عن <strong>${notif.victim}</strong>`;
+                    } else if (notif.target === 'victim' && currentUser.name.includes(notif.victim)) {
+                        shouldShow = true; // الضحية بس يشوفها (لو اسمه موجود في النص)
+                        msg = `👻 <strong>تحذير:</strong> العصفورة بلغت عنك الإدارة.. استخبى بقى!`;
+                    }
+
+                    if(shouldShow) {
+                        document.getElementById('asfouraSound').play().catch(()=>{});
+                        showToast(msg, "blue");
+                    }
+                }
+            });
+        }
+
         function showToast(html, color) {
             const t = document.createElement('div');
             t.className = 'funny-toast';
             t.style.borderRightColor = color === 'red' ? '#d32f2f' : '#1976d2';
             t.innerHTML = html;
             document.body.appendChild(t);
-            // صوت نوتيفيكيشن
-            document.getElementById('msgSound').currentTime = 0;
-            document.getElementById('msgSound').play().catch(()=>{});
             
             setTimeout(() => { 
                 t.style.transform = "translateX(120%)";
                 setTimeout(() => t.remove(), 500);
-            }, 4000);
+            }, 5000);
         }
 
         function updateUIByRole() {
@@ -480,6 +533,9 @@
             onValue(ref(db, 'products'), (s) => renderProdManage(s.val() || {}));
             onValue(ref(db, 'categories'), (s) => populateCats(s.val() || {}));
             onValue(ref(db, 'chats'), (s) => handleChatUpdate(s.val() || {}));
+            
+            // تشغيل الاستماع لإشعارات العصفورة
+            listenToNotifications();
         }
 
         function renderOrders(data) {
