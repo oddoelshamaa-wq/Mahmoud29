@@ -92,6 +92,29 @@
         .option-item.selected { border: 2px solid var(--blue); background: #f0f7ff; }
         .cancel-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px; width: 100%; }
         .item-note-input { width: 100%; border: 1px solid #ccc; border-radius: 8px; padding: 10px; font-family: 'Cairo'; margin-bottom: 10px; font-size: 0.9rem; }
+        
+        /* GPS Button Style */
+        .gps-btn {
+            background: linear-gradient(45deg, #1a237e, #0d47a1);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+        .gps-btn:active { transform: scale(0.98); }
+        .gps-success { background: #27ae60 !important; }
+        .gps-error { background: #c0392b !important; }
     </style>
 </head>
 <body>
@@ -132,7 +155,32 @@
     </footer>
     
     <!-- Modals -->
-    <div class="modal" id="authModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('authModal')">&times;</span><h2 style="text-align:center;color:var(--blue);">تسجيل جديد</h2><input type="text" id="regName" class="custom-input" placeholder="الاسم"><input type="tel" id="regPhone" class="custom-input" placeholder="رقم الهاتف"><select id="regZone" class="custom-input"><option value="" disabled selected>اختر المنطقة</option><option value="المعادي">المعادي</option><option value="مدينة نصر">مدينة نصر</option><option value="مصر الجديدة">مصر الجديدة</option><option value="وسط البلد">وسط البلد</option><option value="الهرم">الهرم</option><option value="أخرى">منطقة أخرى</option></select><input type="text" id="regAddress" class="custom-input" placeholder="اسم الشارع ورقم العقار"><button class="btn-main" onclick="handleRegister()">حفظ البيانات</button></div></div>
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('authModal')">&times;</span>
+            <h2 style="text-align:center;color:var(--blue);">تسجيل جديد</h2>
+            <input type="text" id="regName" class="custom-input" placeholder="الاسم">
+            <input type="tel" id="regPhone" class="custom-input" placeholder="رقم الهاتف">
+            <select id="regZone" class="custom-input">
+                <option value="" disabled selected>اختر المنطقة</option>
+                <option value="المعادي">المعادي</option>
+                <option value="مدينة نصر">مدينة نصر</option>
+                <option value="مصر الجديدة">مصر الجديدة</option>
+                <option value="وسط البلد">وسط البلد</option>
+                <option value="الهرم">الهرم</option>
+                <option value="أخرى">منطقة أخرى</option>
+            </select>
+            
+            <!-- GPS Button Added Here -->
+            <button id="gpsBtn" class="gps-btn" onclick="getLocation()">
+                <i class="fas fa-location-arrow"></i> تحديد موقعي بدقة (GPS)
+            </button>
+            <p id="gpsStatus" style="font-size:0.8rem; text-align:center; margin-top:-8px; margin-bottom:8px; display:none;"></p>
+            
+            <input type="text" id="regAddress" class="custom-input" placeholder="العنوان (الشارع - رقم العمارة)">
+            <button class="btn-main" onclick="handleRegister()">حفظ البيانات</button>
+        </div>
+    </div>
     
     <div class="modal" id="profileModal"><div class="modal-content" style="text-align:center;"><span class="close-btn" onclick="closeModal('profileModal')">&times;</span><div style="width:80px;height:80px;background:#f0f0f0;border-radius:50%;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--blue);"><i class="fas fa-user-circle"></i></div><h3 id="profName" style="margin:5px 0;"></h3><p id="profPhone" style="color:#666;margin:5px 0;"></p><p id="profAddress" style="color:#666;font-size:0.9rem;margin-bottom:20px;"></p><button class="btn-danger" onclick="logout()">تسجيل الخروج</button></div></div>
     
@@ -175,6 +223,7 @@
         });
 
         let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null;
+        let userLocationLink = ""; // Global variable to store Maps link
 
         onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
         onValue(ref(db, 'categories'), (s) => { 
@@ -193,15 +242,106 @@
             });
         }
 
+        // --- GPS Logic Starts Here ---
+        window.getLocation = function() {
+            const btn = document.getElementById('gpsBtn');
+            const status = document.getElementById('gpsStatus');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تحديد المكان...';
+            status.style.display = 'block';
+            status.style.color = '#666';
+            status.innerText = 'يرجى السماح بصلاحية الموقع من المتصفح';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                    enableHighAccuracy: true, // طلب دقة عالية
+                    timeout: 15000,
+                    maximumAge: 0
+                });
+            } else {
+                showError({message: "Geolocation is not supported"});
+            }
+        }
+
+        function showPosition(position) {
+            const btn = document.getElementById('gpsBtn');
+            const status = document.getElementById('gpsStatus');
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            // Create Google Maps Link
+            userLocationLink = `https://www.google.com/maps?q=${lat},${lon}`;
+            
+            btn.innerHTML = '<i class="fas fa-map-marker-alt"></i> جاري جلب اسم الشارع...';
+
+            // Reverse Geocoding using Nominatim (Free)
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`)
+            .then(response => response.json())
+            .then(data => {
+                let addr = data.address;
+                // محاولة تركيب العنوان (الشارع + رقم البيت)
+                let street = addr.road || addr.pedestrian || "";
+                let house = addr.house_number ? `رقم ${addr.house_number}` : "";
+                let suburb = addr.suburb || addr.neighbourhood || addr.city_district || "";
+                
+                let fullAddr = "";
+                if(street) fullAddr += street;
+                if(house) fullAddr += " - " + house;
+                if(suburb) fullAddr += " (" + suburb + ")";
+
+                // Fallback if structured data is empty
+                if(fullAddr.length < 5) fullAddr = data.display_name.split(',').slice(0, 3).join(',');
+
+                document.getElementById('regAddress').value = fullAddr;
+                
+                btn.className = 'gps-btn gps-success';
+                btn.innerHTML = '<i class="fas fa-check"></i> تم تحديد الموقع بنجاح';
+                status.style.color = 'green';
+                status.innerText = 'تم حفظ الإحداثيات واسم الشارع. يرجى مراجعة الرقم.';
+            })
+            .catch(error => {
+                console.error('Error fetching address:', error);
+                document.getElementById('regAddress').value = `إحداثيات: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+                btn.className = 'gps-btn gps-success';
+                btn.innerHTML = '<i class="fas fa-check"></i> تم حفظ الموقع (الخريطة)';
+                status.innerText = 'تم حفظ اللوكيشن للطيار، اكتب العنوان كتابة للتأكيد.';
+            });
+        }
+
+        function showError(error) {
+            const btn = document.getElementById('gpsBtn');
+            const status = document.getElementById('gpsStatus');
+            btn.className = 'gps-btn gps-error';
+            btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> فشل تحديد الموقع';
+            status.style.color = 'red';
+            status.innerText = 'تأكد من تفعيل GPS أو اكتب العنوان يدوياً.';
+        }
+        // --- GPS Logic Ends Here ---
+
         if(currentUser) { setupUserUI(); initChatListener(); }
         window.openAuth=()=>document.getElementById('authModal').style.display='flex';
         window.openProfile=()=>{ if(!currentUser){openAuth();return;} document.getElementById('profName').innerText=currentUser.name; document.getElementById('profPhone').innerText=currentUser.phone; document.getElementById('profAddress').innerText=currentUser.address; document.getElementById('profileModal').style.display='flex'; }
         window.closeModal=function(id){document.getElementById(id).style.display='none';}
         window.logout=()=>{ localStorage.removeItem('nagaf_user_info'); location.reload(); }
+        
+        // Modified Register to save GPS Link
         window.handleRegister=()=>{
             let n=document.getElementById('regName').value, p=document.getElementById('regPhone').value, z=document.getElementById('regZone').value, a=document.getElementById('regAddress').value;
-            if(n&&p&&z&&a){ currentUser={name:n,phone:p,address:`${z} - ${a}`,zone:z}; localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); push(ref(db,'users'),{...currentUser,role:'customer'}); setupUserUI(); closeModal('authModal'); initChatListener(); } else alert('اكمل البيانات');
+            if(n&&p&&z&&a){ 
+                currentUser={
+                    name:n,
+                    phone:p,
+                    address:`${z} - ${a}`,
+                    zone:z,
+                    locationLink: userLocationLink || "" // Save the map link
+                }; 
+                localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); 
+                push(ref(db,'users'),{...currentUser,role:'customer'}); 
+                setupUserUI(); 
+                closeModal('authModal'); 
+                initChatListener(); 
+            } else alert('اكمل البيانات');
         }
+        
         function setupUserUI(){ document.getElementById('loginBtnNav').style.display='none'; document.getElementById('userProfileNav').style.display='flex'; }
 
         window.openOptions=function(n){
@@ -246,10 +386,25 @@
         window.remItem=function(i){ cart.splice(i,1); updateCart(); }
         window.openCart=function(){ document.getElementById('cartModal').style.display='flex'; }
         
+        // Modified Submit Order to include GPS Link
         window.submitOrder=function(){
             if(!currentUser){ closeModal('cartModal'); return openAuth(); }
             if(!cart.length) return alert('السلة فارغة');
-            push(ref(db,'orders'),{customerName:currentUser.name,phone:currentUser.phone,address:currentUser.address,items:cart,total:parseInt(document.getElementById('cartTotal').innerText),status:'pending',timestamp:Date.now(),seenByAdmin:false})
+            
+            // Use saved location link if available
+            let locLink = currentUser.locationLink || "";
+            
+            push(ref(db,'orders'),{
+                customerName:currentUser.name,
+                phone:currentUser.phone,
+                address:currentUser.address,
+                locationLink: locLink, // Send to DB
+                items:cart,
+                total:parseInt(document.getElementById('cartTotal').innerText),
+                status:'pending',
+                timestamp:Date.now(),
+                seenByAdmin:false
+            })
             .then(()=>{ closeModal('cartModal'); cart=[]; updateCart(); document.getElementById('successModal').style.display='flex'; }).catch(()=>alert('خطأ'));
         }
         window.closeSuccessModal=()=>{ document.getElementById('successModal').style.display='none'; window.openMyOrders(); }
@@ -266,7 +421,6 @@
                     let st = o.status==='pending' ? 'جاري مراجعة النطاق...' : (o.status==='processing'?'جاري التحضير':(o.status==='completed'?'مكتمل':'ملغي'));
                     let clr = o.status==='completed'?'green':(o.status==='cancelled'?'red':'orange');
                     
-                    // التعديل هنا: السماح بالإلغاء في حالتي (جديد/مراجعة) و (جاري التحضير)
                     let cancelInfo = '';
                     if (o.status === 'pending' || o.status === 'new' || o.status === 'processing') {
                         if (o.cancelRequest) {
@@ -276,15 +430,17 @@
                         }
                     }
 
-                    // عرض سبب الإلغاء إذا تم رفضه أو إلغاؤه من الإدارة
                     let reasonHTML = '';
                     if(o.status === 'cancelled' && o.adminReason) {
                         reasonHTML = `<div style="background:#ffebee; color:#c62828; padding:5px; margin-top:5px; border-radius:5px; font-size:0.9rem;"><strong>سبب الإلغاء:</strong> ${o.adminReason}</div>`;
                     }
+                    
+                    // Show map icon if link exists
+                    let mapIcon = o.locationLink ? `<a href="${o.locationLink}" target="_blank" style="color:var(--blue);margin-left:5px;"><i class="fas fa-map-marker-alt"></i></a>` : '';
 
                     l.innerHTML+=`
                     <div style="background:white;padding:10px;margin-bottom:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
-                        <b>${o.total} ج</b> - <span style="color:${clr}">${st}</span>
+                        <b>${o.total} ج</b> - <span style="color:${clr}">${st}</span> ${mapIcon}
                         <br><small>${new Date(o.timestamp).toLocaleString('ar-EG')}</small>
                         ${reasonHTML}
                         <br>${cancelInfo}
