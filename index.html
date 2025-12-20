@@ -80,6 +80,7 @@
         .btn-main { background: var(--blue); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .btn-gps { background: #27ae60; color: white; width: 100%; padding: 10px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-gps.loading { background: #95a5a6; cursor: not-allowed; animation: pulse 1s infinite; }
+        .gps-hint { font-size: 0.75rem; color: #666; margin-top: -10px; margin-bottom: 12px; display: block; text-align: center; }
         .btn-danger { background: var(--red); color: white; padding:10px; width:100%; border:none; border-radius:10px; font-weight: 700; margin-top:5px; }
         footer { background-color: var(--dark-blue); color: white; text-align: center; padding: 25px 0 30px 0; margin-top: 40px; border-top: 4px solid var(--red); }
         .footer-hotline { font-size: 2rem; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -132,7 +133,7 @@
         <div class="footer-copy">نجف | 1958</div>
     </footer>
     
-    <!-- Modals -->
+    <!-- Auth Modal -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('authModal')">&times;</span>
@@ -148,12 +149,13 @@
                 <option value="الهرم">الهرم</option>
                 <option value="أخرى">منطقة أخرى</option>
             </select>
-            <input type="text" id="regAddress" class="custom-input" placeholder="اسم الشارع ورقم العقار">
-            
-            <!-- GPS Button -->
+
             <button id="gpsBtn" class="btn-gps" onclick="getUserLocation()">
-                <i class="fas fa-map-marker-alt"></i> <span id="gpsTxt">تحديد موقعي بدقة (GPS)</span>
+                <i class="fas fa-map-marker-alt"></i> <span id="gpsTxt">تحديد العنوان بالـ GPS</span>
             </button>
+            <span class="gps-hint">* يمكنك تعديل العنوان يدوياً إذا لم يكن دقيقاً</span>
+
+            <input type="text" id="regAddress" class="custom-input" placeholder="رقم العمارة والشارع">
             
             <button class="btn-main" onclick="handleRegister()">حفظ البيانات</button>
         </div>
@@ -190,7 +192,6 @@
         const app = initializeApp(firebaseConfig); 
         const db = getDatabase(app);
         
-        // --- Loader Logic ---
         window.addEventListener('load', function() {
             const loader = document.getElementById('loader-wrapper');
             setTimeout(() => {
@@ -218,61 +219,29 @@
             });
         }
 
-        // --- GPS High Accuracy & Reverse Geocoding ---
+        // --- GPS Logic ---
         window.getUserLocation = function() {
-            const btn = document.getElementById('gpsBtn');
-            const txt = document.getElementById('gpsTxt');
-            const addrInput = document.getElementById('regAddress');
-            
-            if (!navigator.geolocation) {
-                alert("متصفحك لا يدعم تحديد الموقع.");
-                return;
-            }
-
-            btn.classList.add('loading');
-            txt.innerText = "جاري تحديد إحداثياتك...";
-
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    tempCoords = { lat: lat, lng: lon, accuracy: position.coords.accuracy };
-
-                    txt.innerText = "جاري استخراج رقم العمارة والشارع...";
-                    
-                    try {
-                        // استخدام خدمة Nominatim المجانية لتحويل الإحداثيات لعنوان نصي
-                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=ar`);
-                        const data = await response.json();
-                        
-                        if (data && data.address) {
-                            const a = data.address;
-                            // محاولة تجميع عنوان مفصل (رقم العمارة، الشارع، الحي)
-                            const building = a.house_number || "عمارة غير مسجلة";
-                            const street = a.road || "شارع غير مسمى";
-                            const neighborhood = a.neighbourhood || a.suburb || "";
-                            
-                            const fullAddress = `عمارة ${building}، شارع ${street}، ${neighborhood}`;
-                            addrInput.value = fullAddress;
-                            
-                            btn.style.background = "#27ae60";
-                            txt.innerText = "تم تحديد العنوان بدقة ✅";
-                        } else {
-                            txt.innerText = "تم تحديد الموقع (إحداثيات فقط)";
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        txt.innerText = "تم التحديد (فشل جلب اسم الشارع)";
+            const btn = document.getElementById('gpsBtn'), txt = document.getElementById('gpsTxt'), addrInput = document.getElementById('regAddress');
+            if (!navigator.geolocation) return alert("متصفحك لا يدعم تحديد الموقع.");
+            btn.classList.add('loading'); txt.innerText = "جاري التحديد...";
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude, lon = pos.coords.longitude;
+                tempCoords = { lat, lng: lon };
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=ar`);
+                    const data = await res.json();
+                    if (data && data.address) {
+                        const a = data.address;
+                        const building = a.house_number || "";
+                        const road = a.road || "";
+                        const suburb = a.suburb || a.city_district || "";
+                        addrInput.value = `${building ? 'عمارة '+building+'، ' : ''}${road}${suburb ? '، '+suburb : ''}`;
+                        txt.innerText = "تم التحديد ✅";
+                        btn.style.background = "#27ae60";
                     }
-                    btn.classList.remove('loading');
-                },
-                (error) => {
-                    btn.classList.remove('loading');
-                    btn.style.background = "#e74c3c";
-                    txt.innerText = "فشل التحديد.. تأكد من تفعيل الـ GPS";
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
+                } catch (e) { txt.innerText = "تم التحديد (إحداثيات فقط)"; }
+                btn.classList.remove('loading');
+            }, () => { btn.classList.remove('loading'); alert("تأكد من تفعيل الـ GPS"); }, { enableHighAccuracy: true, timeout: 10000 });
         };
 
         if(currentUser) { setupUserUI(); initChatListener(); }
@@ -287,10 +256,8 @@
                 currentUser={name:n,phone:p,address:`${z} - ${a}`,zone:z, coords: tempCoords}; 
                 localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); 
                 push(ref(db,'users'),{...currentUser,role:'customer'}); 
-                setupUserUI(); 
-                closeModal('authModal'); 
-                initChatListener(); 
-            } else alert('يرجى إكمال جميع البيانات وتحديد الموقع');
+                setupUserUI(); closeModal('authModal'); initChatListener(); 
+            } else alert('يرجى إكمال جميع البيانات');
         }
         
         function setupUserUI(){ document.getElementById('loginBtnNav').style.display='none'; document.getElementById('userProfileNav').style.display='flex'; }
@@ -300,8 +267,7 @@
             document.getElementById('optProdName').innerText=n;
             const l=document.getElementById('variantsList'); l.innerHTML='';
             selectedProductTemp.variants.forEach((v,i)=>{
-                let sizeTxt = v.size && v.size !== 'موحد' ? ` (${v.size})` : '';
-                l.innerHTML+=`<div class="option-item" onclick="selectVar(${i},this)"><div class="option-details"><b>${v.bread}${sizeTxt}</b></div><div style="font-weight:bold;color:var(--red)">${v.price} ج</div></div>`;
+                l.innerHTML+=`<div class="option-item" onclick="selectVar(${i},this)"><div class="option-details"><b>${v.bread}${v.size && v.size !== 'موحد' ? ' ('+v.size+')' : ''}</b></div><div style="font-weight:bold;color:var(--red)">${v.price} ج</div></div>`;
             });
             if(l.children[0]) window.selectVar(0,l.children[0]);
             document.getElementById('itemNote').value = '';
@@ -314,8 +280,7 @@
         }
 
         window.confirmAddToCart=function(){ 
-            let noteTxt = document.getElementById('itemNote').value;
-            cart.push({ ...selectedProductTemp, variant: selectedVariantTemp, note: noteTxt }); 
+            cart.push({ ...selectedProductTemp, variant: selectedVariantTemp, note: document.getElementById('itemNote').value }); 
             updateCart(); closeModal('optionsModal'); 
         }
 
@@ -325,9 +290,8 @@
             let t=0; 
             d.innerHTML=cart.map((i,x)=>{
                 t+=i.variant.price; 
-                let noteHtml = i.note ? `<br><small style="color:#e67e22;"><i class="fas fa-comment-dots"></i> ${i.note}</small>` : '';
                 return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;">
-                    <div><b>${i.name}</b><br><small>${i.variant.bread} ${i.variant.size !== 'موحد' ? '- '+i.variant.size : ''}</small>${noteHtml}</div>
+                    <div><b>${i.name}</b><br><small>${i.variant.bread}</small>${i.note ? '<br><small style="color:#e67e22;">'+i.note+'</small>' : ''}</div>
                     <div>${i.variant.price}ج <i class="fas fa-trash" style="color:red;cursor:pointer;margin-right:5px;" onclick="window.remItem(${x})"></i></div>
                 </div>`
             }).join(''); 
@@ -338,24 +302,18 @@
         window.openCart=function(){ document.getElementById('cartModal').style.display='flex'; }
         
         window.submitOrder=function(){
-            if(!currentUser){ closeModal('cartModal'); return openAuth(); }
+            if(!currentUser) return openAuth();
             if(!cart.length) return alert('السلة فارغة');
-            
-            // إنشاء رابط لوكيشن جوجل مابز للمطعم
-            let mapLink = currentUser.coords ? `https://www.google.com/maps?q=${currentUser.coords.lat},${currentUser.coords.lng}` : "غير متوفر";
-
             push(ref(db,'orders'),{
                 customerName:currentUser.name,
                 phone:currentUser.phone,
                 address:currentUser.address,
-                googleMaps: mapLink,
+                googleMaps: currentUser.coords ? `https://www.google.com/maps?q=${currentUser.coords.lat},${currentUser.coords.lng}` : "غير متوفر",
                 items:cart,
                 total:parseInt(document.getElementById('cartTotal').innerText),
                 status:'pending',
-                timestamp:Date.now(),
-                seenByAdmin:false
-            })
-            .then(()=>{ closeModal('cartModal'); cart=[]; updateCart(); document.getElementById('successModal').style.display='flex'; }).catch(()=>alert('خطأ'));
+                timestamp:Date.now()
+            }).then(()=>{ closeModal('cartModal'); cart=[]; updateCart(); document.getElementById('successModal').style.display='flex'; });
         }
         window.closeSuccessModal=()=>{ document.getElementById('successModal').style.display='none'; window.openMyOrders(); }
         
@@ -363,46 +321,22 @@
             if(!currentUser) return openAuth();
             onValue(ref(db,'orders'),(s)=>{
                 const d=s.val()||{}, l=document.getElementById('ordersList'); l.innerHTML='';
-                const mo=Object.values(d).map((v, i) => ({...v, key: Object.keys(d)[i]})).filter(o=>o.phone===currentUser.phone).reverse();
-                if(!mo.length) l.innerHTML='<p style="text-align:center">لا يوجد طلبات</p>';
-                
+                const mo=Object.keys(d).map(k=>({...d[k], key:k})).filter(o=>o.phone===currentUser.phone).reverse();
                 mo.forEach(o=>{ 
-                    let st = o.status==='pending' ? 'جاري مراجعة النطاق...' : (o.status==='processing'?'جاري التحضير':(o.status==='completed'?'مكتمل':'ملغي'));
-                    let clr = o.status==='completed'?'green':(o.status==='cancelled'?'red':'orange');
-                    
-                    let cancelInfo = '';
-                    if (o.status === 'pending' || o.status === 'new' || o.status === 'processing') {
-                        if (o.cancelRequest) {
-                            cancelInfo = '<span style="color:#d35400; font-size:0.8rem; font-weight:bold;"><i class="fas fa-clock"></i> في انتظار موافقة الإدارة على الإلغاء...</span>';
-                        } else {
-                            cancelInfo = `<button class="cancel-btn" onclick="window.requestCancel('${o.key}')">إلغاء الطلب</button>`;
-                        }
-                    }
-
-                    let reasonHTML = '';
-                    if(o.status === 'cancelled' && o.adminReason) {
-                        reasonHTML = `<div style="background:#ffebee; color:#c62828; padding:5px; margin-top:5px; border-radius:5px; font-size:0.9rem;"><strong>سبب الإلغاء:</strong> ${o.adminReason}</div>`;
-                    }
-
-                    l.innerHTML+=`
-                    <div style="background:white;padding:10px;margin-bottom:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
-                        <b>${o.total} ج</b> - <span style="color:${clr}">${st}</span>
+                    let st = o.status==='pending' ? 'جاري المراجعة...' : (o.status==='processing'?'جاري التحضير':(o.status==='completed'?'مكتمل':'ملغي'));
+                    l.innerHTML+=`<div style="background:white;padding:10px;margin-bottom:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                        <b>${o.total} ج</b> - <span style="color:${o.status==='completed'?'green':'orange'}">${st}</span>
                         <br><small>${new Date(o.timestamp).toLocaleString('ar-EG')}</small>
-                        ${reasonHTML}
-                        <br>${cancelInfo}
+                        ${(o.status!=='completed'&&o.status!=='cancelled') ? (o.cancelRequest ? '<br><small>طلب الإلغاء قيد الانتظار</small>' : '<button class="cancel-btn" onclick="window.requestCancel(\''+o.key+'\')">إلغاء الطلب</button>') : ''}
                     </div>`; 
                 });
                 document.getElementById('ordersModal').style.display='flex';
             });
         }
 
-        window.requestCancel = function(key) {
-            let reason = prompt("ما هو سبب رغبتك في إلغاء الطلب؟");
-            if(reason) {
-                update(ref(db, 'orders/'+key), { cancelRequest: true, cancelReason: reason })
-                .then(() => alert("تم إرسال طلب الإلغاء للمطعم، يرجى الانتظار للموافقة."))
-                .catch((e) => alert("حدث خطأ"));
-            }
+        window.requestCancel = (k) => {
+            let r = prompt("سبب الإلغاء؟");
+            if(r) update(ref(db, 'orders/'+k), { cancelRequest: true, cancelReason: r }).then(()=>alert("تم إرسال الطلب"));
         }
 
         let chatInitialized = false;
@@ -424,12 +358,13 @@
         }
 
         window.toggleChat=()=>{ 
-            const w=document.getElementById('chatWindow'); 
-            w.style.display=w.style.display==='none'?'flex':'none'; 
+            const w=document.getElementById('chatWindow'); w.style.display=w.style.display==='none'?'flex':'none'; 
             document.getElementById('chatFloat').classList.remove('new-msg'); 
-            if(currentUser && !chatInitialized) initChatListener(); 
         }
-        window.sendChat=()=>{ let t=document.getElementById('chatInput').value; if(t&&currentUser){ push(ref(db,'chats/'+currentUser.phone),{sender:'customer',text:t, timestamp:Date.now()}); document.getElementById('chatInput').value=''; } else if(!currentUser) openAuth(); }
+        window.sendChat=()=>{ 
+            let t=document.getElementById('chatInput').value; 
+            if(t&&currentUser){ push(ref(db,'chats/'+currentUser.phone),{sender:'customer',text:t, timestamp:Date.now()}); document.getElementById('chatInput').value=''; }
+        }
     </script>
 </body>  
 </html>
