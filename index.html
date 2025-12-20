@@ -78,6 +78,8 @@
         .close-btn { position: absolute; top: 15px; left: 15px; font-size: 1.5rem; color: #aaa; cursor: pointer; }
         .custom-input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; font-family: 'Cairo'; background: #fafafa; font-size: 1rem; }
         .btn-main { background: var(--blue); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-gps { background: #27ae60; color: white; width: 100%; padding: 10px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-gps.loading { background: #95a5a6; cursor: not-allowed; }
         .btn-danger { background: var(--red); color: white; padding:10px; width:100%; border:none; border-radius:10px; font-weight: 700; margin-top:5px; }
         footer { background-color: var(--dark-blue); color: white; text-align: center; padding: 25px 0 30px 0; margin-top: 40px; border-top: 4px solid var(--red); }
         .footer-hotline { font-size: 2rem; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -99,7 +101,6 @@
     <div id="loader-wrapper">
         <div class="loader-content">
             <div class="loader-spinner"></div>
-            <!-- تم تغيير المسار هنا -->
             <img src="logo.jpg.jpg" class="loader-logo" alt="Nagaf Logo">
         </div>
         <div class="loader-text">N A G A F</div>
@@ -114,7 +115,6 @@
             <div id="loginBtnNav" class="profile-btn" onclick="openAuth()"><i class="fas fa-sign-in-alt"></i></div>
             <div id="userProfileNav" class="profile-btn" style="display:none;" onclick="openProfile()"><i class="fas fa-user"></i></div>
         </div>
-        <!-- تم تغيير المسار هنا -->
         <div class="logo-container"><img src="logo.jpg.jpg" alt="Nagaf" class="logo-img"></div>
     </header>
 
@@ -133,7 +133,31 @@
     </footer>
     
     <!-- Modals -->
-    <div class="modal" id="authModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('authModal')">&times;</span><h2 style="text-align:center;color:var(--blue);">تسجيل جديد</h2><input type="text" id="regName" class="custom-input" placeholder="الاسم"><input type="tel" id="regPhone" class="custom-input" placeholder="رقم الهاتف"><select id="regZone" class="custom-input"><option value="" disabled selected>اختر المنطقة</option><option value="المعادي">المعادي</option><option value="مدينة نصر">مدينة نصر</option><option value="مصر الجديدة">مصر الجديدة</option><option value="وسط البلد">وسط البلد</option><option value="الهرم">الهرم</option><option value="أخرى">منطقة أخرى</option></select><input type="text" id="regAddress" class="custom-input" placeholder="اسم الشارع ورقم العقار"><button class="btn-main" onclick="handleRegister()">حفظ البيانات</button></div></div>
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('authModal')">&times;</span>
+            <h2 style="text-align:center;color:var(--blue);">تسجيل جديد</h2>
+            <input type="text" id="regName" class="custom-input" placeholder="الاسم">
+            <input type="tel" id="regPhone" class="custom-input" placeholder="رقم الهاتف">
+            <select id="regZone" class="custom-input">
+                <option value="" disabled selected>اختر المنطقة</option>
+                <option value="المعادي">المعادي</option>
+                <option value="مدينة نصر">مدينة نصر</option>
+                <option value="مصر الجديدة">مصر الجديدة</option>
+                <option value="وسط البلد">وسط البلد</option>
+                <option value="الهرم">الهرم</option>
+                <option value="أخرى">منطقة أخرى</option>
+            </select>
+            <input type="text" id="regAddress" class="custom-input" placeholder="اسم الشارع ورقم العقار">
+            
+            <!-- GPS Button -->
+            <button id="gpsBtn" class="btn-gps" onclick="getUserLocation()">
+                <i class="fas fa-map-marker-alt"></i> <span id="gpsTxt">تحديد موقعي بدقة (GPS)</span>
+            </button>
+            
+            <button class="btn-main" onclick="handleRegister()">حفظ البيانات</button>
+        </div>
+    </div>
     
     <div class="modal" id="profileModal"><div class="modal-content" style="text-align:center;"><span class="close-btn" onclick="closeModal('profileModal')">&times;</span><div style="width:80px;height:80px;background:#f0f0f0;border-radius:50%;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--blue);"><i class="fas fa-user-circle"></i></div><h3 id="profName" style="margin:5px 0;"></h3><p id="profPhone" style="color:#666;margin:5px 0;"></p><p id="profAddress" style="color:#666;font-size:0.9rem;margin-bottom:20px;"></p><button class="btn-danger" onclick="logout()">تسجيل الخروج</button></div></div>
     
@@ -175,7 +199,7 @@
             }, 2500); 
         });
 
-        let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null;
+        let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null, tempCoords=null;
 
         onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
         onValue(ref(db, 'categories'), (s) => { 
@@ -194,15 +218,62 @@
             });
         }
 
+        // --- GPS High Accuracy Logic ---
+        window.getUserLocation = function() {
+            const btn = document.getElementById('gpsBtn');
+            const txt = document.getElementById('gpsTxt');
+            
+            if (!navigator.geolocation) {
+                alert("متصفحك لا يدعم تحديد الموقع.");
+                return;
+            }
+
+            btn.classList.add('loading');
+            txt.innerText = "جاري تحديد موقعك بدقة...";
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    tempCoords = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+                    btn.style.background = "#27ae60";
+                    btn.classList.remove('loading');
+                    txt.innerText = "تم تحديد موقعك بنجاح ✅";
+                },
+                (error) => {
+                    btn.classList.remove('loading');
+                    btn.style.background = "#e74c3c";
+                    txt.innerText = "فشل التحديد.. تأكد من تفعيل الـ GPS";
+                    console.error(error);
+                },
+                {
+                    enableHighAccuracy: true, // تفعيل أعلى دقة ممكنة
+                    timeout: 10000,           // مدة المحاولة 10 ثواني
+                    maximumAge: 0             // عدم استخدام موقع قديم مخزن
+                }
+            );
+        };
+
         if(currentUser) { setupUserUI(); initChatListener(); }
         window.openAuth=()=>document.getElementById('authModal').style.display='flex';
         window.openProfile=()=>{ if(!currentUser){openAuth();return;} document.getElementById('profName').innerText=currentUser.name; document.getElementById('profPhone').innerText=currentUser.phone; document.getElementById('profAddress').innerText=currentUser.address; document.getElementById('profileModal').style.display='flex'; }
         window.closeModal=function(id){document.getElementById(id).style.display='none';}
         window.logout=()=>{ localStorage.removeItem('nagaf_user_info'); location.reload(); }
+        
         window.handleRegister=()=>{
             let n=document.getElementById('regName').value, p=document.getElementById('regPhone').value, z=document.getElementById('regZone').value, a=document.getElementById('regAddress').value;
-            if(n&&p&&z&&a){ currentUser={name:n,phone:p,address:`${z} - ${a}`,zone:z}; localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); push(ref(db,'users'),{...currentUser,role:'customer'}); setupUserUI(); closeModal('authModal'); initChatListener(); } else alert('اكمل البيانات');
+            if(n&&p&&z&&a){ 
+                currentUser={name:n,phone:p,address:`${z} - ${a}`,zone:z, coords: tempCoords}; 
+                localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); 
+                push(ref(db,'users'),{...currentUser,role:'customer'}); 
+                setupUserUI(); 
+                closeModal('authModal'); 
+                initChatListener(); 
+            } else alert('يرجى إكمال جميع البيانات وتحديد الموقع إذا أمكن');
         }
+        
         function setupUserUI(){ document.getElementById('loginBtnNav').style.display='none'; document.getElementById('userProfileNav').style.display='flex'; }
 
         window.openOptions=function(n){
@@ -250,7 +321,19 @@
         window.submitOrder=function(){
             if(!currentUser){ closeModal('cartModal'); return openAuth(); }
             if(!cart.length) return alert('السلة فارغة');
-            push(ref(db,'orders'),{customerName:currentUser.name,phone:currentUser.phone,address:currentUser.address,items:cart,total:parseInt(document.getElementById('cartTotal').innerText),status:'pending',timestamp:Date.now(),seenByAdmin:false})
+            
+            // إضافة الموقع الجغرافي للطلب
+            push(ref(db,'orders'),{
+                customerName:currentUser.name,
+                phone:currentUser.phone,
+                address:currentUser.address,
+                coords: currentUser.coords || null, // إرسال الإحداثيات هنا
+                items:cart,
+                total:parseInt(document.getElementById('cartTotal').innerText),
+                status:'pending',
+                timestamp:Date.now(),
+                seenByAdmin:false
+            })
             .then(()=>{ closeModal('cartModal'); cart=[]; updateCart(); document.getElementById('successModal').style.display='flex'; }).catch(()=>alert('خطأ'));
         }
         window.closeSuccessModal=()=>{ document.getElementById('successModal').style.display='none'; window.openMyOrders(); }
