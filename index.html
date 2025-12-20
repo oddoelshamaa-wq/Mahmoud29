@@ -11,7 +11,7 @@
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Cairo', sans-serif; margin: 0; background: var(--bg-gray); padding-bottom: 0; overflow-x: hidden; }
         
-        /* --- LOADER STYLES (ستايل منكش) --- */
+        /* --- LOADER STYLES --- */
         #loader-wrapper {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; z-index: 99999;
@@ -35,7 +35,6 @@
             animation: shake 2s infinite;
         }
         
-        /* انميشن منكش (Glitch/Shake) */
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes glitch { 
             0% { transform: translate(0) } 
@@ -62,7 +61,7 @@
         .icon-wrap { position: relative; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
         .badge { position: absolute; top: 0; right: 0; background: var(--red); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; justify-content: center; border: 2px solid var(--blue); }
         .profile-btn { background: rgba(255,255,255,0.2); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
-        .hero { background: linear-gradient(rgba(26, 35, 126, 0.8), rgba(183, 28, 28, 0.6)), url('https://source.unsplash.com/800x600/?egyptian-food') center/cover; height: 160px; display: flex; align-items: center; justify-content: center; text-align: center; color: white; border-radius: 0 0 25px 25px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .hero { background: linear-gradient(rgba(26, 35, 126, 0.8), rgba(183, 28, 28, 0.6)), url('https://images.unsplash.com/photo-1567156002723-95c556b62d85?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') center/cover; height: 160px; display: flex; align-items: center; justify-content: center; text-align: center; color: white; border-radius: 0 0 25px 25px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .category-nav { display: flex; overflow-x: auto; padding: 5px 15px 15px; gap: 10px; scrollbar-width: none; }
         .cat-btn { background: white; color: var(--text); border: 1px solid #e0e0e0; padding: 8px 20px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: 0.3s; }
         .cat-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
@@ -93,24 +92,11 @@
         .cancel-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px; width: 100%; }
         .item-note-input { width: 100%; border: 1px solid #ccc; border-radius: 8px; padding: 10px; font-family: 'Cairo'; margin-bottom: 10px; font-size: 0.9rem; }
         
-        /* GPS Button Style */
         .gps-btn {
             background: linear-gradient(45deg, #1a237e, #0d47a1);
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-            transition: 0.3s;
+            color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-size: 0.9rem;
+            cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-bottom: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.2); transition: 0.3s;
         }
         .gps-btn:active { transform: scale(0.98); }
         .gps-success { background: #27ae60 !important; }
@@ -123,7 +109,8 @@
     <div id="loader-wrapper">
         <div class="loader-content">
             <div class="loader-spinner"></div>
-            <img src="https://scontent.fcai20-3.fna.fbcdn.net/v/t39.30808-6/374567354_674327448061584_5979966477678462692_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=FrSE9MWl_6QQ7kNvwFAhUPI&_nc_oc=AdngfO4ff4o0AxSljHVhHGAePUVZNEldFjkcBsv_8eQHPfm9ij4TVXXKAhVa_6BsBjk&_nc_zt=23&_nc_ht=scontent.fcai20-3.fna&_nc_gid=TQzikFqmvYqvF2LOrq__Ng&oh=00_AfnWFPsTcAl4x79UCBVaeSyBIxtONCa4PSqLWNhw7aGh5Q&oe=6942B46F" class="loader-logo" alt="Nagaf Logo">
+            <!-- تم تعديل الرابط هنا -->
+            <img src="logo.jpg" class="loader-logo" alt="Nagaf Logo">
         </div>
         <div class="loader-text">N A G A F</div>
     </div>
@@ -137,7 +124,8 @@
             <div id="loginBtnNav" class="profile-btn" onclick="openAuth()"><i class="fas fa-sign-in-alt"></i></div>
             <div id="userProfileNav" class="profile-btn" style="display:none;" onclick="openProfile()"><i class="fas fa-user"></i></div>
         </div>
-        <div class="logo-container"><img src="https://scontent.fcai20-3.fna.fbcdn.net/v/t39.30808-6/374567354_674327448061584_5979966477678462692_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=FrSE9MWl_6QQ7kNvwFAhUPI&_nc_oc=AdngfO4ff4o0AxSljHVhHGAePUVZNEldFjkcBsv_8eQHPfm9ij4TVXXKAhVa_6BsBjk&_nc_zt=23&_nc_ht=scontent.fcai20-3.fna&_nc_gid=TQzikFqmvYqvF2LOrq__Ng&oh=00_AfnWFPsTcAl4x79UCBVaeSyBIxtONCa4PSqLWNhw7aGh5Q&oe=6942B46F" alt="Nagaf" class="logo-img"></div>
+        <!-- تم تعديل الرابط هنا -->
+        <div class="logo-container"><img src="logo.jpg" alt="Nagaf" class="logo-img"></div>
     </header>
 
     <div class="hero"><div><h1>أصل الأكل المصري</h1><p>أطلب واستمتع بالطعم الأصلي</p></div></div>
@@ -170,13 +158,10 @@
                 <option value="الهرم">الهرم</option>
                 <option value="أخرى">منطقة أخرى</option>
             </select>
-            
-            <!-- GPS Button Added Here -->
             <button id="gpsBtn" class="gps-btn" onclick="getLocation()">
                 <i class="fas fa-location-arrow"></i> تحديد موقعي بدقة (GPS)
             </button>
             <p id="gpsStatus" style="font-size:0.8rem; text-align:center; margin-top:-8px; margin-bottom:8px; display:none;"></p>
-            
             <input type="text" id="regAddress" class="custom-input" placeholder="العنوان (الشارع - رقم العمارة)">
             <button class="btn-main" onclick="handleRegister()">حفظ البيانات</button>
         </div>
@@ -213,7 +198,6 @@
         const app = initializeApp(firebaseConfig); 
         const db = getDatabase(app);
         
-        // --- Loader Logic ---
         window.addEventListener('load', function() {
             const loader = document.getElementById('loader-wrapper');
             setTimeout(() => {
@@ -223,7 +207,7 @@
         });
 
         let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null;
-        let userLocationLink = ""; // Global variable to store Maps link
+        let userLocationLink = "";
 
         onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
         onValue(ref(db, 'categories'), (s) => { 
@@ -242,7 +226,6 @@
             });
         }
 
-        // --- GPS Logic Starts Here ---
         window.getLocation = function() {
             const btn = document.getElementById('gpsBtn');
             const status = document.getElementById('gpsStatus');
@@ -252,14 +235,8 @@
             status.innerText = 'يرجى السماح بصلاحية الموقع من المتصفح';
 
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError, {
-                    enableHighAccuracy: true, // طلب دقة عالية
-                    timeout: 15000,
-                    maximumAge: 0
-                });
-            } else {
-                showError({message: "Geolocation is not supported"});
-            }
+                navigator.geolocation.getCurrentPosition(showPosition, showError, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+            } else { showError({message: "Geolocation is not supported"}); }
         }
 
         function showPosition(position) {
@@ -267,43 +244,28 @@
             const status = document.getElementById('gpsStatus');
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
-            
-            // Create Google Maps Link
             userLocationLink = `https://www.google.com/maps?q=${lat},${lon}`;
-            
             btn.innerHTML = '<i class="fas fa-map-marker-alt"></i> جاري جلب اسم الشارع...';
 
-            // Reverse Geocoding using Nominatim (Free)
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`)
             .then(response => response.json())
             .then(data => {
                 let addr = data.address;
-                // محاولة تركيب العنوان (الشارع + رقم البيت)
                 let street = addr.road || addr.pedestrian || "";
                 let house = addr.house_number ? `رقم ${addr.house_number}` : "";
                 let suburb = addr.suburb || addr.neighbourhood || addr.city_district || "";
-                
-                let fullAddr = "";
-                if(street) fullAddr += street;
-                if(house) fullAddr += " - " + house;
-                if(suburb) fullAddr += " (" + suburb + ")";
-
-                // Fallback if structured data is empty
+                let fullAddr = (street ? street : "") + (house ? " - " + house : "") + (suburb ? " (" + suburb + ")" : "");
                 if(fullAddr.length < 5) fullAddr = data.display_name.split(',').slice(0, 3).join(',');
-
                 document.getElementById('regAddress').value = fullAddr;
-                
                 btn.className = 'gps-btn gps-success';
                 btn.innerHTML = '<i class="fas fa-check"></i> تم تحديد الموقع بنجاح';
                 status.style.color = 'green';
-                status.innerText = 'تم حفظ الإحداثيات واسم الشارع. يرجى مراجعة الرقم.';
+                status.innerText = 'تم حفظ الإحداثيات واسم الشارع.';
             })
             .catch(error => {
-                console.error('Error fetching address:', error);
                 document.getElementById('regAddress').value = `إحداثيات: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
                 btn.className = 'gps-btn gps-success';
                 btn.innerHTML = '<i class="fas fa-check"></i> تم حفظ الموقع (الخريطة)';
-                status.innerText = 'تم حفظ اللوكيشن للطيار، اكتب العنوان كتابة للتأكيد.';
             });
         }
 
@@ -315,7 +277,6 @@
             status.style.color = 'red';
             status.innerText = 'تأكد من تفعيل GPS أو اكتب العنوان يدوياً.';
         }
-        // --- GPS Logic Ends Here ---
 
         if(currentUser) { setupUserUI(); initChatListener(); }
         window.openAuth=()=>document.getElementById('authModal').style.display='flex';
@@ -323,22 +284,13 @@
         window.closeModal=function(id){document.getElementById(id).style.display='none';}
         window.logout=()=>{ localStorage.removeItem('nagaf_user_info'); location.reload(); }
         
-        // Modified Register to save GPS Link
         window.handleRegister=()=>{
             let n=document.getElementById('regName').value, p=document.getElementById('regPhone').value, z=document.getElementById('regZone').value, a=document.getElementById('regAddress').value;
             if(n&&p&&z&&a){ 
-                currentUser={
-                    name:n,
-                    phone:p,
-                    address:`${z} - ${a}`,
-                    zone:z,
-                    locationLink: userLocationLink || "" // Save the map link
-                }; 
+                currentUser={ name:n, phone:p, address:`${z} - ${a}`, zone:z, locationLink: userLocationLink || "" }; 
                 localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); 
                 push(ref(db,'users'),{...currentUser,role:'customer'}); 
-                setupUserUI(); 
-                closeModal('authModal'); 
-                initChatListener(); 
+                setupUserUI(); closeModal('authModal'); initChatListener(); 
             } else alert('اكمل البيانات');
         }
         
@@ -386,77 +338,37 @@
         window.remItem=function(i){ cart.splice(i,1); updateCart(); }
         window.openCart=function(){ document.getElementById('cartModal').style.display='flex'; }
         
-        // Modified Submit Order to include GPS Link
         window.submitOrder=function(){
             if(!currentUser){ closeModal('cartModal'); return openAuth(); }
             if(!cart.length) return alert('السلة فارغة');
-            
-            // Use saved location link if available
-            let locLink = currentUser.locationLink || "";
-            
             push(ref(db,'orders'),{
-                customerName:currentUser.name,
-                phone:currentUser.phone,
-                address:currentUser.address,
-                locationLink: locLink, // Send to DB
-                items:cart,
-                total:parseInt(document.getElementById('cartTotal').innerText),
-                status:'pending',
-                timestamp:Date.now(),
-                seenByAdmin:false
+                customerName:currentUser.name, phone:currentUser.phone, address:currentUser.address, locationLink: currentUser.locationLink || "",
+                items:cart, total:parseInt(document.getElementById('cartTotal').innerText), status:'pending', timestamp:Date.now(), seenByAdmin:false
             })
             .then(()=>{ closeModal('cartModal'); cart=[]; updateCart(); document.getElementById('successModal').style.display='flex'; }).catch(()=>alert('خطأ'));
         }
+
         window.closeSuccessModal=()=>{ document.getElementById('successModal').style.display='none'; window.openMyOrders(); }
         
-        // --- Order History & Cancellation Logic ---
         window.openMyOrders=function(){
             if(!currentUser) return openAuth();
             onValue(ref(db,'orders'),(s)=>{
                 const d=s.val()||{}, l=document.getElementById('ordersList'); l.innerHTML='';
-                const mo=Object.values(d).map((v, i) => ({...v, key: Object.keys(d)[i]})).filter(o=>o.phone===currentUser.phone).reverse();
+                const mo=Object.keys(d).map(k=>({...d[k], key:k})).filter(o=>o.phone===currentUser.phone).reverse();
                 if(!mo.length) l.innerHTML='<p style="text-align:center">لا يوجد طلبات</p>';
-                
                 mo.forEach(o=>{ 
                     let st = o.status==='pending' ? 'جاري مراجعة النطاق...' : (o.status==='processing'?'جاري التحضير':(o.status==='completed'?'مكتمل':'ملغي'));
                     let clr = o.status==='completed'?'green':(o.status==='cancelled'?'red':'orange');
-                    
-                    let cancelInfo = '';
-                    if (o.status === 'pending' || o.status === 'new' || o.status === 'processing') {
-                        if (o.cancelRequest) {
-                            cancelInfo = '<span style="color:#d35400; font-size:0.8rem; font-weight:bold;"><i class="fas fa-clock"></i> في انتظار موافقة الإدارة على الإلغاء...</span>';
-                        } else {
-                            cancelInfo = `<button class="cancel-btn" onclick="window.requestCancel('${o.key}')">إلغاء الطلب</button>`;
-                        }
-                    }
-
-                    let reasonHTML = '';
-                    if(o.status === 'cancelled' && o.adminReason) {
-                        reasonHTML = `<div style="background:#ffebee; color:#c62828; padding:5px; margin-top:5px; border-radius:5px; font-size:0.9rem;"><strong>سبب الإلغاء:</strong> ${o.adminReason}</div>`;
-                    }
-                    
-                    // Show map icon if link exists
-                    let mapIcon = o.locationLink ? `<a href="${o.locationLink}" target="_blank" style="color:var(--blue);margin-left:5px;"><i class="fas fa-map-marker-alt"></i></a>` : '';
-
-                    l.innerHTML+=`
-                    <div style="background:white;padding:10px;margin-bottom:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
-                        <b>${o.total} ج</b> - <span style="color:${clr}">${st}</span> ${mapIcon}
-                        <br><small>${new Date(o.timestamp).toLocaleString('ar-EG')}</small>
-                        ${reasonHTML}
-                        <br>${cancelInfo}
-                    </div>`; 
+                    let cancelInfo = (o.status==='pending'||o.status==='processing') ? (o.cancelRequest ? '<span style="color:#d35400;">في انتظار الموافقة على الإلغاء...</span>' : `<button class="cancel-btn" onclick="window.requestCancel('${o.key}')">إلغاء الطلب</button>`) : '';
+                    l.innerHTML+=`<div style="background:white;padding:10px;margin-bottom:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);"><b>${o.total} ج</b> - <span style="color:${clr}">${st}</span><br><small>${new Date(o.timestamp).toLocaleString('ar-EG')}</small><br>${cancelInfo}</div>`; 
                 });
                 document.getElementById('ordersModal').style.display='flex';
             });
         }
 
         window.requestCancel = function(key) {
-            let reason = prompt("ما هو سبب رغبتك في إلغاء الطلب؟");
-            if(reason) {
-                update(ref(db, 'orders/'+key), { cancelRequest: true, cancelReason: reason })
-                .then(() => alert("تم إرسال طلب الإلغاء للمطعم، يرجى الانتظار للموافقة."))
-                .catch((e) => alert("حدث خطأ"));
-            }
+            let reason = prompt("سبب الإلغاء؟");
+            if(reason) update(ref(db, 'orders/'+key), { cancelRequest: true, cancelReason: reason });
         }
 
         let chatInitialized = false;
@@ -469,21 +381,13 @@
                 chatBody.scrollTop = chatBody.scrollHeight;
                 if(chatInitialized) {
                     const last = msgs[msgs.length-1];
-                    if(last && last.sender === 'admin' && Date.now() - last.timestamp < 10000) {
-                        document.getElementById('msgSound').play().catch(()=>{});
-                        document.getElementById('chatFloat').classList.add('new-msg');
-                    }
+                    if(last && last.sender === 'admin' && Date.now() - last.timestamp < 10000) { document.getElementById('msgSound').play().catch(()=>{}); document.getElementById('chatFloat').classList.add('new-msg'); }
                 } else chatInitialized = true;
             });
         }
 
-        window.toggleChat=()=>{ 
-            const w=document.getElementById('chatWindow'); 
-            w.style.display=w.style.display==='none'?'flex':'none'; 
-            document.getElementById('chatFloat').classList.remove('new-msg'); 
-            if(currentUser && !chatInitialized) initChatListener(); 
-        }
-        window.sendChat=()=>{ let t=document.getElementById('chatInput').value; if(t&&currentUser){ push(ref(db,'chats/'+currentUser.phone),{sender:'customer',text:t, timestamp:Date.now()}); document.getElementById('chatInput').value=''; } else if(!currentUser) openAuth(); }
+        window.toggleChat=()=>{ const w=document.getElementById('chatWindow'); w.style.display=w.style.display==='none'?'flex':'none'; document.getElementById('chatFloat').classList.remove('new-msg'); }
+        window.sendChat=()=>{ let t=document.getElementById('chatInput').value; if(t&&currentUser){ push(ref(db,'chats/'+currentUser.phone),{sender:'customer',text:t, timestamp:Date.now()}); document.getElementById('chatInput').value=''; } }
     </script>
 </body> 
 </html>
