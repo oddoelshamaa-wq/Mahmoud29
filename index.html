@@ -137,27 +137,39 @@
     <div class="modal" id="authModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('authModal')">&times;</span>
-            <h2 style="text-align:center;color:var(--blue);">تسجيل جديد</h2>
-            <input type="text" id="regName" class="custom-input" placeholder="الاسم">
-            <input type="tel" id="regPhone" class="custom-input" placeholder="رقم الهاتف">
-            <select id="regZone" class="custom-input">
-                <option value="" disabled selected>اختر المنطقة</option>
-                <option value="المعادي">المعادي</option>
-                <option value="مدينة نصر">مدينة نصر</option>
-                <option value="مصر الجديدة">مصر الجديدة</option>
-                <option value="وسط البلد">وسط البلد</option>
-                <option value="الهرم">الهرم</option>
-                <option value="أخرى">منطقة أخرى</option>
-            </select>
+            <div id="regFields">
+                <h2 style="text-align:center;color:var(--blue);">تسجيل جديد</h2>
+                <input type="text" id="regName" class="custom-input" placeholder="الاسم">
+                <input type="tel" id="regPhone" class="custom-input" placeholder="رقم الهاتف (مثال: 01xxxxxxxxx)">
+                <select id="regZone" class="custom-input">
+                    <option value="" disabled selected>اختر المنطقة</option>
+                    <option value="المعادي">المعادي</option>
+                    <option value="مدينة نصر">مدينة نصر</option>
+                    <option value="مصر الجديدة">مصر الجديدة</option>
+                    <option value="وسط البلد">وسط البلد</option>
+                    <option value="الهرم">الهرم</option>
+                    <option value="أخرى">منطقة أخرى</option>
+                </select>
 
-            <button id="gpsBtn" class="btn-gps" onclick="getUserLocation()">
-                <i class="fas fa-map-marker-alt"></i> <span id="gpsTxt">تحديد العنوان بالـ GPS</span>
-            </button>
-            <span class="gps-hint">* يمكنك تعديل العنوان يدوياً إذا لم يكن دقيقاً</span>
+                <button id="gpsBtn" class="btn-gps" onclick="getUserLocation()">
+                    <i class="fas fa-map-marker-alt"></i> <span id="gpsTxt">تحديد العنوان بالـ GPS</span>
+                </button>
+                <span class="gps-hint">* يمكنك تعديل العنوان يدوياً إذا لم يكن دقيقاً</span>
 
-            <input type="text" id="regAddress" class="custom-input" placeholder="رقم العمارة والشارع">
-            
-            <button class="btn-main" onclick="handleRegister()">حفظ البيانات</button>
+                <input type="text" id="regAddress" class="custom-input" placeholder="رقم العمارة والشارع">
+                
+                <div id="recaptcha-container"></div>
+                <button class="btn-main" id="sendOtpBtn" onclick="handleRegister()">حفظ البيانات والتحقق</button>
+            </div>
+
+            <!-- OTP Field -->
+            <div id="otpFields" style="display:none;">
+                <h2 style="text-align:center;color:var(--blue);">تحقق من الهاتف</h2>
+                <p style="text-align:center;font-size:0.9rem;">أدخل الرمز المرسل لهاتفك</p>
+                <input type="number" id="otpCode" class="custom-input" placeholder="------" style="text-align:center;letter-spacing:10px;font-size:1.5rem;">
+                <button class="btn-main" onclick="verifyOTP()">تأكيد الكود</button>
+                <button class="btn-danger" onclick="location.reload()" style="background:#888;">رجوع</button>
+            </div>
         </div>
     </div>
     
@@ -187,11 +199,14 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         
         const firebaseConfig = { apiKey: "AIzaSyAaf3l8VFttOCruK9jZczBsi1eBwg2U5yE", authDomain: "nagaf-f9b1c.firebaseapp.com", projectId: "nagaf-f9b1c", databaseURL: "https://nagaf-f9b1c-default-rtdb.firebaseio.com", storageBucket: "nagaf-f9b1c.appspot.com", messagingSenderId: "840123927886", appId: "1:840123927886:web:c6baad7f059cfab461e21f" };
         const app = initializeApp(firebaseConfig); 
         const db = getDatabase(app);
-        
+        const auth = getAuth(app);
+        auth.languageCode = 'ar';
+
         window.addEventListener('load', function() {
             const loader = document.getElementById('loader-wrapper');
             setTimeout(() => {
@@ -200,7 +215,7 @@
             }, 2500); 
         });
 
-        let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null, tempCoords=null;
+        let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null, tempCoords=null, confirmationResult=null;
 
         onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
         onValue(ref(db, 'categories'), (s) => { 
@@ -250,14 +265,56 @@
         window.closeModal=function(id){document.getElementById(id).style.display='none';}
         window.logout=()=>{ localStorage.removeItem('nagaf_user_info'); location.reload(); }
         
+        // --- OTP & Registration Logic ---
         window.handleRegister=()=>{
-            let n=document.getElementById('regName').value, p=document.getElementById('regPhone').value, z=document.getElementById('regZone').value, a=document.getElementById('regAddress').value;
-            if(n&&p&&z&&a){ 
-                currentUser={name:n,phone:p,address:`${z} - ${a}`,zone:z, coords: tempCoords}; 
+            let n=document.getElementById('regName').value, 
+                p=document.getElementById('regPhone').value, 
+                z=document.getElementById('regZone').value, 
+                a=document.getElementById('regAddress').value;
+
+            if(n&&p&&z&&a){
+                // تحويل الرقم للصيغة الدولية (افتراض مصر +20)
+                let formattedPhone = p.startsWith('+') ? p : '+20' + p.replace(/^0/, '');
+                
+                document.getElementById('sendOtpBtn').innerText = "جاري الإرسال...";
+                
+                if(!window.recaptchaVerifier){
+                    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+                }
+
+                signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier)
+                    .then((result) => {
+                        confirmationResult = result;
+                        document.getElementById('regFields').style.display = 'none';
+                        document.getElementById('otpFields').style.display = 'block';
+                    }).catch((error) => {
+                        alert("خطأ في إرسال الكود: " + error.message);
+                        document.getElementById('sendOtpBtn').innerText = "حفظ البيانات والتحقق";
+                    });
+            } else alert('يرجى إكمال جميع البيانات');
+        }
+
+        window.verifyOTP = () => {
+            let code = document.getElementById('otpCode').value;
+            if(!code) return alert("أدخل الكود أولاً");
+
+            confirmationResult.confirm(code).then((result) => {
+                // النجاح - حفظ البيانات النهائية
+                let n=document.getElementById('regName').value, 
+                    p=document.getElementById('regPhone').value, 
+                    z=document.getElementById('regZone').value, 
+                    a=document.getElementById('regAddress').value;
+
+                currentUser={name:n,phone:p,address:`${z} - ${a}`,zone:z, coords: tempCoords, uid: result.user.uid}; 
                 localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); 
                 push(ref(db,'users'),{...currentUser,role:'customer'}); 
-                setupUserUI(); closeModal('authModal'); initChatListener(); 
-            } else alert('يرجى إكمال جميع البيانات');
+                setupUserUI(); 
+                closeModal('authModal'); 
+                initChatListener();
+                alert("تم التحقق بنجاح!");
+            }).catch((error) => {
+                alert("الكود غير صحيح، حاول مرة أخرى.");
+            });
         }
         
         function setupUserUI(){ document.getElementById('loginBtnNav').style.display='none'; document.getElementById('userProfileNav').style.display='flex'; }
