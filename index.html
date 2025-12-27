@@ -158,17 +158,8 @@
 
                 <input type="text" id="regAddress" class="custom-input" placeholder="رقم العمارة والشارع">
                 
-                <div id="recaptcha-container"></div>
-                <button class="btn-main" id="sendOtpBtn" onclick="handleRegister()">حفظ البيانات والتحقق</button>
-            </div>
-
-            <!-- OTP Field -->
-            <div id="otpFields" style="display:none;">
-                <h2 style="text-align:center;color:var(--blue);">تحقق من الهاتف</h2>
-                <p style="text-align:center;font-size:0.9rem;">أدخل الرمز المرسل لهاتفك</p>
-                <input type="number" id="otpCode" class="custom-input" placeholder="------" style="text-align:center;letter-spacing:10px;font-size:1.5rem;">
-                <button class="btn-main" onclick="verifyOTP()">تأكيد الكود</button>
-                <button class="btn-danger" onclick="location.reload()" style="background:#888;">رجوع</button>
+                <!-- تم حذف حاوية الكابتشا و OTP -->
+                <button class="btn-main" id="sendOtpBtn" onclick="handleRegister()">تسجيل وحفظ البيانات</button>
             </div>
         </div>
     </div>
@@ -199,13 +190,12 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        
+        // تمت إزالة مكتبات Auth الخاصة بالتحقق من الهاتف
         
         const firebaseConfig = { apiKey: "AIzaSyAaf3l8VFttOCruK9jZczBsi1eBwg2U5yE", authDomain: "nagaf-f9b1c.firebaseapp.com", projectId: "nagaf-f9b1c", databaseURL: "https://nagaf-f9b1c-default-rtdb.firebaseio.com", storageBucket: "nagaf-f9b1c.appspot.com", messagingSenderId: "840123927886", appId: "1:840123927886:web:c6baad7f059cfab461e21f" };
         const app = initializeApp(firebaseConfig); 
         const db = getDatabase(app);
-        const auth = getAuth(app);
-        auth.languageCode = 'ar';
 
         window.addEventListener('load', function() {
             const loader = document.getElementById('loader-wrapper');
@@ -215,7 +205,7 @@
             }, 2500); 
         });
 
-        let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null, tempCoords=null, confirmationResult=null;
+        let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null, tempCoords=null;
 
         onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
         onValue(ref(db, 'categories'), (s) => { 
@@ -265,7 +255,7 @@
         window.closeModal=function(id){document.getElementById(id).style.display='none';}
         window.logout=()=>{ localStorage.removeItem('nagaf_user_info'); location.reload(); }
         
-        // --- OTP & Registration Logic ---
+        // --- Direct Registration Logic (No OTP) ---
         window.handleRegister=()=>{
             let n=document.getElementById('regName').value, 
                 p=document.getElementById('regPhone').value, 
@@ -273,50 +263,24 @@
                 a=document.getElementById('regAddress').value;
 
             if(n&&p&&z&&a){
-                // تحويل الرقم للصيغة الدولية (افتراض مصر +20)
-                let formattedPhone = p.startsWith('+') ? p : '+20' + p.replace(/^0/, '');
-                
-                document.getElementById('sendOtpBtn').innerText = "جاري الإرسال...";
-                
-                if(!window.recaptchaVerifier){
-                    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-                }
-
-                signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier)
-                    .then((result) => {
-                        confirmationResult = result;
-                        document.getElementById('regFields').style.display = 'none';
-                        document.getElementById('otpFields').style.display = 'block';
-                    }).catch((error) => {
-                        alert("خطأ في إرسال الكود: " + error.message);
-                        document.getElementById('sendOtpBtn').innerText = "حفظ البيانات والتحقق";
-                    });
-            } else alert('يرجى إكمال جميع البيانات');
-        }
-
-        window.verifyOTP = () => {
-            let code = document.getElementById('otpCode').value;
-            if(!code) return alert("أدخل الكود أولاً");
-
-            confirmationResult.confirm(code).then((result) => {
-                // النجاح - حفظ البيانات النهائية
-                let n=document.getElementById('regName').value, 
-                    p=document.getElementById('regPhone').value, 
-                    z=document.getElementById('regZone').value, 
-                    a=document.getElementById('regAddress').value;
-
-                currentUser={name:n,phone:p,address:`${z} - ${a}`,zone:z, coords: tempCoords, uid: result.user.uid}; 
+                // حفظ مباشر بدون كود تحقق
+                currentUser={
+                    name:n,
+                    phone:p,
+                    address:`${z} - ${a}`,
+                    zone:z, 
+                    coords: tempCoords, 
+                    uid: 'u_' + p.replace(/\D/g,'') // معرف بسيط يعتمد على الهاتف
+                }; 
                 localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); 
-                push(ref(db,'users'),{...currentUser,role:'customer'}); 
+                push(ref(db,'users'),{...currentUser,role:'customer', joined: Date.now()}); 
                 setupUserUI(); 
                 closeModal('authModal'); 
                 initChatListener();
-                alert("تم التحقق بنجاح!");
-            }).catch((error) => {
-                alert("الكود غير صحيح، حاول مرة أخرى.");
-            });
+                alert("تم التسجيل بنجاح!");
+            } else alert('يرجى إكمال جميع البيانات');
         }
-        
+
         function setupUserUI(){ document.getElementById('loginBtnNav').style.display='none'; document.getElementById('userProfileNav').style.display='flex'; }
 
         window.openOptions=function(n){
