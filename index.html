@@ -133,12 +133,12 @@
         <div class="footer-copy">نجف | 1958</div>
     </footer>
     
-    <!-- Auth Modal -->
+    <!-- Auth Modal (Used for Login, Registration, and Adding Addresses) -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('authModal')">&times;</span>
             <div id="regFields">
-                <h2 style="text-align:center;color:var(--blue);">تسجيل جديد</h2>
+                <h2 id="authTitle" style="text-align:center;color:var(--blue);">تسجيل جديد</h2>
                 <input type="text" id="regName" class="custom-input" placeholder="الاسم">
                 <input type="tel" id="regPhone" class="custom-input" placeholder="رقم الهاتف (مثال: 01xxxxxxxxx)">
                 <select id="regZone" class="custom-input">
@@ -158,13 +158,15 @@
 
                 <input type="text" id="regAddress" class="custom-input" placeholder="رقم العمارة والشارع">
                 
-                <!-- تم حذف حاوية الكابتشا و OTP -->
-                <button class="btn-main" id="sendOtpBtn" onclick="handleRegister()">تسجيل وحفظ البيانات</button>
+                <button class="btn-main" id="sendOtpBtn" onclick="handleRegister()">حفظ البيانات</button>
             </div>
         </div>
     </div>
     
-    <div class="modal" id="profileModal"><div class="modal-content" style="text-align:center;"><span class="close-btn" onclick="closeModal('profileModal')">&times;</span><div style="width:80px;height:80px;background:#f0f0f0;border-radius:50%;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--blue);"><i class="fas fa-user-circle"></i></div><h3 id="profName" style="margin:5px 0;"></h3><p id="profPhone" style="color:#666;margin:5px 0;"></p><p id="profAddress" style="color:#666;font-size:0.9rem;margin-bottom:20px;"></p><button class="btn-danger" onclick="logout()">تسجيل الخروج</button></div></div>
+    <div class="modal" id="profileModal"><div class="modal-content" style="text-align:center;"><span class="close-btn" onclick="closeModal('profileModal')">&times;</span><div style="width:80px;height:80px;background:#f0f0f0;border-radius:50%;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--blue);"><i class="fas fa-user-circle"></i></div><h3 id="profName" style="margin:5px 0;"></h3><p id="profPhone" style="color:#666;margin:5px 0;"></p>
+    <div id="profAddressList" style="text-align:right; margin: 15px 0; max-height: 150px; overflow-y: auto;"></div>
+    <button class="btn-gps" onclick="openAddAddress()" style="background:var(--blue);margin-bottom:10px;">+ إضافة عنوان جديد</button>
+    <button class="btn-danger" onclick="logout()">تسجيل الخروج</button></div></div>
     
     <div class="modal" id="successModal"><div class="modal-content" style="text-align:center;"><i class="fas fa-check-circle" style="font-size:4rem;color:#27ae60;margin-bottom:15px;display:block;"></i><h3 style="color:var(--blue);margin:10px 0;">تم الإرسال بنجاح!</h3><p style="color:#555;font-size:1.1rem;">سيتم مراجعة النطاق الجغرافي وتأكيد الطلب.</p><button class="btn-main" onclick="closeSuccessModal()">حسناً</button></div></div>
     
@@ -180,7 +182,16 @@
         </div>
     </div>
     
-    <div class="modal" id="cartModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('cartModal')">&times;</span><h2 style="color:var(--blue);text-align:center;border-bottom:1px solid #eee;padding-bottom:10px;">سلة المشتريات</h2><div id="cartItems" style="max-height:300px;overflow-y:auto;margin-bottom:15px;"></div><div style="display:flex;justify-content:space-between;font-weight:bold;font-size:1.1rem;margin-bottom:15px;"><span>الإجمالي:</span><span style="color:var(--red);"><span id="cartTotal">0</span> جنيه</span></div><button class="btn-main" onclick="submitOrder()">تأكيد الطلب</button></div></div>
+    <!-- Cart Modal Updated for Multi-Address -->
+    <div class="modal" id="cartModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('cartModal')">&times;</span><h2 style="color:var(--blue);text-align:center;border-bottom:1px solid #eee;padding-bottom:10px;">سلة المشتريات</h2><div id="cartItems" style="max-height:300px;overflow-y:auto;margin-bottom:15px;"></div>
+    
+    <div style="margin-bottom:15px;">
+        <label style="font-weight:bold;">عنوان التوصيل:</label>
+        <select id="cartAddressSelect" class="custom-input" style="margin-bottom:5px;"></select>
+        <button class="btn-gps" onclick="openAddAddress()" style="font-size:0.8rem;padding:6px;width:auto;display:inline-flex;">+ عنوان جديد</button>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:1.1rem;margin-bottom:15px;"><span>الإجمالي:</span><span style="color:var(--red);"><span id="cartTotal">0</span> جنيه</span></div><button class="btn-main" onclick="submitOrder()">تأكيد الطلب</button></div></div>
     
     <div class="modal" id="ordersModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('ordersModal')">&times;</span><h2 style="text-align:center;color:var(--blue);">طلباتي السابقة</h2><div id="ordersList" style="max-height:60vh;overflow-y:auto;background:#f9f9f9;padding:10px;border-radius:10px;"></div></div></div>
     
@@ -190,8 +201,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        
-        // تمت إزالة مكتبات Auth الخاصة بالتحقق من الهاتف
         
         const firebaseConfig = { apiKey: "AIzaSyAaf3l8VFttOCruK9jZczBsi1eBwg2U5yE", authDomain: "nagaf-f9b1c.firebaseapp.com", projectId: "nagaf-f9b1c", databaseURL: "https://nagaf-f9b1c-default-rtdb.firebaseio.com", storageBucket: "nagaf-f9b1c.appspot.com", messagingSenderId: "840123927886", appId: "1:840123927886:web:c6baad7f059cfab461e21f" };
         const app = initializeApp(firebaseConfig); 
@@ -206,6 +215,12 @@
         });
 
         let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null, tempCoords=null;
+
+        // Ensure user has addresses array if loaded from old structure
+        if(currentUser && !currentUser.addresses) {
+            currentUser.addresses = [{ zone: currentUser.zone, address: currentUser.address, coords: currentUser.coords }];
+            localStorage.setItem('nagaf_user_info', JSON.stringify(currentUser));
+        }
 
         onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
         onValue(ref(db, 'categories'), (s) => { 
@@ -250,34 +265,100 @@
         };
 
         if(currentUser) { setupUserUI(); initChatListener(); }
-        window.openAuth=()=>document.getElementById('authModal').style.display='flex';
-        window.openProfile=()=>{ if(!currentUser){openAuth();return;} document.getElementById('profName').innerText=currentUser.name; document.getElementById('profPhone').innerText=currentUser.phone; document.getElementById('profAddress').innerText=currentUser.address; document.getElementById('profileModal').style.display='flex'; }
+        
+        window.openAuth = () => {
+            document.getElementById('authTitle').innerText = "تسجيل جديد";
+            document.getElementById('regName').style.display = 'block';
+            document.getElementById('regPhone').style.display = 'block';
+            if(currentUser) {
+                 document.getElementById('regName').value = currentUser.name;
+                 document.getElementById('regPhone').value = currentUser.phone;
+            }
+            document.getElementById('authModal').style.display='flex';
+        }
+
+        window.openAddAddress = () => {
+             if(!currentUser) return openAuth();
+             document.getElementById('authTitle').innerText = "إضافة عنوان جديد";
+             document.getElementById('regName').style.display = 'none'; // No need to change name
+             document.getElementById('regPhone').style.display = 'none'; // No need to change phone
+             // Clear address fields
+             document.getElementById('regAddress').value = '';
+             document.getElementById('regZone').value = '';
+             document.getElementById('gpsTxt').innerText = "تحديد العنوان بالـ GPS";
+             document.getElementById('gpsBtn').style.background = "";
+             closeModal('cartModal');
+             closeModal('profileModal');
+             document.getElementById('authModal').style.display='flex';
+        }
+
+        window.openProfile=()=>{ 
+            if(!currentUser){openAuth();return;} 
+            document.getElementById('profName').innerText=currentUser.name; 
+            document.getElementById('profPhone').innerText=currentUser.phone; 
+            
+            // List Addresses
+            const list = document.getElementById('profAddressList');
+            list.innerHTML = '<h4>عناويني:</h4>';
+            if(currentUser.addresses && currentUser.addresses.length > 0) {
+                currentUser.addresses.forEach((addr, i) => {
+                    list.innerHTML += `<div style="border-bottom:1px solid #eee;padding:5px;font-size:0.9rem;">
+                        <b>${addr.zone}</b><br>${addr.address}
+                    </div>`;
+                });
+            }
+
+            document.getElementById('profileModal').style.display='flex'; 
+        }
+        
         window.closeModal=function(id){document.getElementById(id).style.display='none';}
         window.logout=()=>{ localStorage.removeItem('nagaf_user_info'); location.reload(); }
         
-        // --- Direct Registration Logic (No OTP) ---
+        // --- Registration / Add Address Logic ---
         window.handleRegister=()=>{
             let n=document.getElementById('regName').value, 
                 p=document.getElementById('regPhone').value, 
                 z=document.getElementById('regZone').value, 
                 a=document.getElementById('regAddress').value;
 
+            // If user logged in, we use their existing data for name/phone
+            if(currentUser) { n = currentUser.name; p = currentUser.phone; }
+
             if(n&&p&&z&&a){
-                // حفظ مباشر بدون كود تحقق
-                currentUser={
-                    name:n,
-                    phone:p,
-                    address:`${z} - ${a}`,
-                    zone:z, 
-                    coords: tempCoords, 
-                    uid: 'u_' + p.replace(/\D/g,'') // معرف بسيط يعتمد على الهاتف
-                }; 
+                const newAddressObj = {
+                    zone: z,
+                    address: a,
+                    coords: tempCoords || null
+                };
+
+                if (currentUser) {
+                    // User exists, add address
+                    if(!currentUser.addresses) currentUser.addresses = [];
+                    currentUser.addresses.push(newAddressObj);
+                    // Update Firebase
+                    update(ref(db, 'users/' + currentUser.uid), { addresses: currentUser.addresses });
+                    alert("تم إضافة العنوان بنجاح!");
+                } else {
+                    // New Registration
+                    currentUser={
+                        name:n,
+                        phone:p,
+                        // Legacy support for fields
+                        address:`${z} - ${a}`,
+                        zone:z,
+                        coords: tempCoords,
+                        addresses: [newAddressObj], // Array support
+                        uid: 'u_' + p.replace(/\D/g,'') 
+                    }; 
+                    push(ref(db,'users'),{...currentUser,role:'customer', joined: Date.now()}); 
+                    alert("تم التسجيل بنجاح!");
+                }
+
                 localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); 
-                push(ref(db,'users'),{...currentUser,role:'customer', joined: Date.now()}); 
                 setupUserUI(); 
                 closeModal('authModal'); 
                 initChatListener();
-                alert("تم التسجيل بنجاح!");
+                
             } else alert('يرجى إكمال جميع البيانات');
         }
 
@@ -320,16 +401,37 @@
         }
 
         window.remItem=function(i){ cart.splice(i,1); updateCart(); }
-        window.openCart=function(){ document.getElementById('cartModal').style.display='flex'; }
+        
+        window.openCart=function(){ 
+            if(currentUser && currentUser.addresses) {
+                const sel = document.getElementById('cartAddressSelect');
+                sel.innerHTML = '';
+                currentUser.addresses.forEach((addr, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.text = `${addr.zone} - ${addr.address}`;
+                    sel.appendChild(opt);
+                });
+            }
+            document.getElementById('cartModal').style.display='flex'; 
+        }
         
         window.submitOrder=function(){
             if(!currentUser) return openAuth();
             if(!cart.length) return alert('السلة فارغة');
+            
+            // Get selected address
+            const addrIdx = document.getElementById('cartAddressSelect').value;
+            let selectedAddr = currentUser.addresses ? currentUser.addresses[addrIdx] : null;
+
+            // Fallback if no array (should not happen with new logic)
+            if(!selectedAddr) selectedAddr = { address: currentUser.address, zone: currentUser.zone, coords: currentUser.coords };
+
             push(ref(db,'orders'),{
                 customerName:currentUser.name,
                 phone:currentUser.phone,
-                address:currentUser.address,
-                googleMaps: currentUser.coords ? `https://www.google.com/maps?q=${currentUser.coords.lat},${currentUser.coords.lng}` : "غير متوفر",
+                address: `${selectedAddr.zone} - ${selectedAddr.address}`,
+                googleMaps: selectedAddr.coords ? `https://www.google.com/maps?q=${selectedAddr.coords.lat},${selectedAddr.coords.lng}` : "غير متوفر",
                 items:cart,
                 total:parseInt(document.getElementById('cartTotal').innerText),
                 status:'pending',
@@ -348,6 +450,7 @@
                     l.innerHTML+=`<div style="background:white;padding:10px;margin-bottom:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
                         <b>${o.total} ج</b> - <span style="color:${o.status==='completed'?'green':'orange'}">${st}</span>
                         <br><small>${new Date(o.timestamp).toLocaleString('ar-EG')}</small>
+                        <br><small style="color:#555;">${o.address}</small>
                         ${(o.status!=='completed'&&o.status!=='cancelled') ? (o.cancelRequest ? '<br><small>طلب الإلغاء قيد الانتظار</small>' : '<button class="cancel-btn" onclick="window.requestCancel(\''+o.key+'\')">إلغاء الطلب</button>') : ''}
                     </div>`; 
                 });
