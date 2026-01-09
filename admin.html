@@ -1028,6 +1028,31 @@
         </div>
     </div>
 
+    <!-- نافذة تعديل المنتج والأسعار -->
+    <div class="modal" id="editProdModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تعديل المنتج والأسعار</h3>
+            </div>
+            <div class="modal-body-content">
+                <label>اسم المنتج</label>
+                <input type="text" id="editPName">
+
+                <label>التصنيف</label>
+                <select id="editPCat"></select>
+
+                <div id="editPVarsArea" style="margin-top:20px; background: rgba(0,0,0,0.1); padding: 15px; border-radius: 10px;">
+                    <h4 style="margin-top:0;">الأسعار والخيارات:</h4>
+                    <div id="editPVarsList"></div>
+                </div>
+            </div>
+            <div class="modal-footer" id="editProdActions">
+                <!-- سيتم إضافة زر الحفظ هنا برمجياً -->
+            </div>
+            <button class="btn-close-modal" style="width:100%" onclick="document.getElementById('editProdModal').style.display='none'">إلغاء</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, update, onValue, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -1126,16 +1151,20 @@
         }
 
         function startSystem() {
-            onValue(ref(db, 'orders'), (s) => { 
-                allOrders = s.val() || {}; 
-                renderOrders(allOrders); 
-                updateStats(allOrders); 
+            onValue(ref(db, 'orders'), (s) => {
+                allOrders = s.val() || {};
+                renderOrders(allOrders);
+                updateStats(allOrders);
             });
             onValue(ref(db, 'users'), (s) => {
                 allUsersData = s.val() || {};
                 renderUsers(allUsersData);
             });
-            onValue(ref(db, 'products'), (s) => renderProdManage(s.val() || {}));
+            onValue(ref(db, 'products'), (s) => {
+                const data = s.val() || {};
+                window.allProductsData = data;
+                renderProdManage(data);
+            });
             onValue(ref(db, 'categories'), (s) => populateCats(s.val() || {}));
             onValue(ref(db, 'chats'), (s) => handleChatUpdate(s.val() || {}));
             onValue(ref(db, 'team_chat'), (s) => renderTeamChat(s.val() || {}));
@@ -1744,7 +1773,129 @@
 
         document.getElementById('addVarBtn').addEventListener('click', () => { let b=document.getElementById('vType').value, s=document.getElementById('vSize').value, p=document.getElementById('vPrice').value; if(b && p) { tempVariants.push({bread:b,size:s||'موحد',price:parseInt(p)}); document.getElementById('tempVarsDisplay').innerHTML += `<span class="variant-tag" style="background:#eee; padding:5px; margin:2px; border-radius:3px;">${b} (${s||'موحد'}) : ${p}ج</span>`; document.getElementById('vType').value=''; document.getElementById('vSize').value=''; document.getElementById('vPrice').value=''; } });
         document.getElementById('saveProdBtn').addEventListener('click', () => { let n=document.getElementById('prodName').value, i=document.getElementById('prodImg').value, c=document.getElementById('prodCatSelect').value; if(n && tempVariants.length) { push(ref(db,'products'),{name:n,img:i,cat:c,variants:tempVariants,available:true}); alert('تم'); tempVariants=[]; document.getElementById('prodName').value=''; document.getElementById('tempVarsDisplay').innerHTML=''; } });
-        function renderProdManage(data) { document.getElementById('manageProdList').innerHTML=Object.entries(data).map(([k,p])=>`<tr><td>${p.name}</td><td>${p.available?'متاح':'مغلق'}</td><td><button class="btn-blue" onclick="window.tog('${k}',${p.available})">تغيير</button><button class="btn-red" onclick="window.delP('${k}')">حذف</button></td></tr>`).join(''); }
+
+        let allProductsData = {};
+
+        function renderProdManage(data) {
+            allProductsData = data;
+            const list = document.getElementById('manageProdList');
+
+            // نتحقق من صلاحية المستخدم المسجل حالياً
+            const isAdmin = currentUser && currentUser.role === 'admin';
+
+            list.innerHTML = Object.entries(data).map(([k, p]) => {
+                // أزرار التحكم (نفس المنطق السابق)
+                const editBtn = isAdmin ? `
+                    <button class="btn-blue" onclick="window.openEditProd('${k}')" style="background:#f39c12; margin-left:5px;">
+                        <i class="fas fa-edit"></i> تعديل
+                    </button>` : '';
+
+                const deleteBtn = isAdmin ? `
+                    <button class="btn-red" onclick="window.delP('${k}')">
+                        <i class="fas fa-trash"></i> حذف
+                    </button>` : '';
+
+                const toggleBtn = `
+                    <button class="btn-blue" onclick="window.tog('${k}',${p.available})">
+                        <i class="fas fa-sync"></i> ${p.available ? 'إغلاق' : 'فتح'}
+                    </button>`;
+
+                return `
+                <tr>
+                    <!-- خلية المنتج (صورة + اسم) -->
+                    <td style="display: flex; align-items: center; gap: 15px; text-align: right; padding-right: 20px;">
+                        <div style="position: relative; width: 60px; height: 60px;">
+                            <img src="${p.img || 'https://via.placeholder.com/60'}"
+                                 style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.3);"
+                                 onerror="this.src='https://cdn-icons-png.flaticon.com/512/135/135763.png'">
+                        </div>
+                        <div>
+                            <div style="font-weight: bold; color: white; font-size: 1.1rem;">${p.name}</div>
+                            <div style="font-size: 0.8rem; color: #888;">${p.cat || 'بدون تصنيف'}</div>
+                        </div>
+                    </td>
+
+                    <!-- خلية الحالة -->
+                    <td>
+                        <span class="status-badge ${p.available ? 'status-completed' : 'status-cancelled'}">
+                            ${p.available ? 'متاح' : 'غير متاح'}
+                        </span>
+                    </td>
+
+                    <!-- خلية الإجراءات -->
+                    <td>
+                        ${editBtn}
+                        ${toggleBtn}
+                        ${deleteBtn}
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // دالة لفتح نافذة التعديل وتعبئة البيانات
+        window.openEditProd = function(id) {
+            // منع الموظف من فتح نافذة التعديل برمجياً
+            if(currentUser.role !== 'admin') {
+                alert("عفواً، لا تملك صلاحية تعديل الأسعار");
+                return;
+            }
+
+            const p = window.allProductsData[id]; // تأكد أن لديك متغير يحتوي على كل المنتجات
+            if(!p) return;
+
+            document.getElementById('editPName').value = p.name;
+
+            // تعبئة التصنيفات
+            const catSelect = document.getElementById('editPCat');
+            catSelect.innerHTML = document.getElementById('prodCatSelect').innerHTML;
+            catSelect.value = p.cat;
+
+            // عرض الأسعار الحالية لتعديلها
+            const varsList = document.getElementById('editPVarsList');
+            varsList.innerHTML = p.variants.map((v, index) => `
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" value="${v.bread}" id="var-bread-${index}" placeholder="النوع" style="flex:2;">
+                    <input type="text" value="${v.size}" id="var-size-${index}" placeholder="الحجم" style="flex:1;">
+                    <input type="number" value="${v.price}" id="var-price-${index}" placeholder="السعر" style="flex:1; border-color:var(--neon-blue) !important;">
+                </div>
+            `).join('');
+
+            // زر الحفظ
+            document.getElementById('editProdActions').innerHTML = `
+                <button class="btn-blue" style="background:var(--green); width:100%;" onclick="window.saveProdEdit('${id}', ${p.variants.length})">
+                    <i class="fas fa-save"></i> حفظ التغييرات
+                </button>
+            `;
+
+            document.getElementById('editProdModal').style.display = 'flex';
+        }
+
+        // دالة لحفظ التعديلات في Firebase
+        window.saveProdEdit = function(id, count) {
+            const newName = document.getElementById('editPName').value;
+            const newCat = document.getElementById('editPCat').value;
+            const newVariants = [];
+
+            for(let i=0; i<count; i++) {
+                newVariants.push({
+                    bread: document.getElementById(`var-bread-${i}`).value,
+                    size: document.getElementById(`var-size-${i}`).value,
+                    price: parseInt(document.getElementById(`var-price-${i}`).value)
+                });
+            }
+
+            if(newName && newVariants.length > 0) {
+                update(ref(db, 'products/' + id), {
+                    name: newName,
+                    cat: newCat,
+                    variants: newVariants
+                }).then(() => {
+                    alert("تم تحديث السعر والبيانات بنجاح ✅");
+                    document.getElementById('editProdModal').style.display = 'none';
+                });
+            }
+        }
+
         window.tog=(k,s)=>update(ref(db,'products/'+k),{available:!s}); window.delP=(k)=>confirm('حذف؟')&&remove(ref(db,'products/'+k));
 
     </script>
