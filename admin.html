@@ -315,7 +315,106 @@
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 500px; max-width: 90%; border-top: 5px solid var(--red); max-height: 80vh; overflow-y: auto; }
+        /* تحسين شكل المودال ليكون أكثر عصرية */
+        .modal-content {
+            background: #fdfdfd;
+            padding: 0;
+            border-radius: 15px;
+            width: 550px;
+            max-width: 95%;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: var(--blue);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body-content {
+            padding: 20px;
+        }
+
+        /* بطاقة بيانات العميل */
+        .customer-info-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        .info-row i { color: var(--blue); width: 20px; }
+
+        /* جدول المنتجات */
+        .order-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .order-items-table th {
+            text-align: right;
+            padding: 10px;
+            border-bottom: 2px solid #eee;
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .order-items-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .item-name-cell { font-weight: bold; color: #333; }
+        .item-meta { font-size: 0.8rem; color: #777; display: block; }
+
+        .price-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .total-row {
+            border-top: 2px solid #ddd;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--red);
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            background: #f1f1f1;
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-footer button { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
+        .btn-close-modal { background: #ddd; color: #333; }
+        .btn-close-modal:hover { background: #ccc; }
         
         /* Stats */
         .dash-container { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -567,18 +666,7 @@
     </div>
 
     <!-- Modal Order Details -->
-    <div class="modal" id="orderModal">
-        <div class="modal-content">
-            <h2 style="color:var(--blue); text-align:center;">تفاصيل الطلب</h2>
-            <div id="modalBody"></div>
-            <div id="cancelAlert" style="display:none; background:#fff3cd; color:#856404; padding:15px; margin:10px 0; border:1px solid #ffeeba; border-radius:5px;">
-                <strong><i class="fas fa-exclamation-triangle"></i> تنبيه:</strong> العميل يطلب إلغاء هذا الأوردر!
-                <div style="margin-top:5px;"><strong>السبب:</strong> <span id="cancelReasonText"></span></div>
-            </div>
-            <div id="modalActions" style="display:flex; justify-content:center; gap:10px; margin-top:20px;"></div>
-            <button onclick="document.getElementById('orderModal').style.display='none'" style="width:100%; margin-top:10px; background:#ccc; color:black;">إغلاق</button>
-        </div>
-    </div>
+    <div class="modal" id="orderModal"></div>
 
     <!-- Modal User Edit -->
     <div class="modal" id="userEditModal">
@@ -861,37 +949,92 @@
 
             const o = allOrders[k]; if(!o) return;
             
-            const items = (o.items || o.cart || []).map(i => {
-                let noteHtml = '';
-                if(i.note && i.note.trim() !== '') noteHtml = `<span class="item-note">⚠️ ${i.note}</span>`;
-                return `<li>
-                    <div style="margin-bottom:5px;">${i.name} ${i.variant ? `(${i.variant.bread} ${i.variant.size != 'موحد' ? '- ' + i.variant.size : ''})` : ''} - <strong>${i.variant ? i.variant.price : i.price} ج</strong></div>
-                    ${noteHtml}
-                </li>`;
+            // بناء جدول المنتجات
+            let itemsHtml = (o.items || o.cart || []).map(i => {
+                let options = i.variant ? `${i.variant.bread} ${i.variant.size != 'موحد' ? '- ' + i.variant.size : ''}` : 'سادة';
+                let note = i.note ? `<div style="color:orange; font-size:0.75rem;">⚠️ ملاحظة: ${i.note}</div>` : '';
+                return `
+                    <tr>
+                        <td>
+                            <span class="item-name-cell">${i.name}</span>
+                            <span class="item-meta">${options}</span>
+                            ${note}
+                        </td>
+                        <td style="text-align:center;">1</td>
+                        <td style="text-align:left; font-weight:bold;">${i.variant ? i.variant.price : i.price} ج</td>
+                    </tr>`;
             }).join('');
             
-            let extraInfo = '';
-            if(o.status === 'cancelled') {
-                if(o.adminReason) extraInfo = `<div class="reason-box"><strong>تم الإلغاء بواسطة الإدارة:</strong><br>${o.adminReason}</div>`;
-                else if(o.cancelReason) extraInfo = `<div class="reason-box"><strong>تم الإلغاء بطلب العميل:</strong><br>${o.cancelReason}</div>`;
-            }
+            // بناء محتوى المودال الجديد
+            document.getElementById('orderModal').innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <span style="font-weight:bold;"><i class="fas fa-receipt"></i> طلب رقم: #${k.slice(-4)}</span>
+                        <span style="font-size:0.8rem; opacity:0.8;">${new Date(o.timestamp).toLocaleString('ar-EG')}</span>
+                    </div>
+                    
+                    <div class="modal-body-content">
+                        <!-- بيانات العميل -->
+                        <div class="customer-info-card">
+                            <div class="info-row"><i class="fas fa-user"></i> <strong>${o.customerName}</strong></div>
+                            <div class="info-row"><i class="fas fa-phone"></i> <span dir="ltr">${o.phone}</span></div>
+                            <div class="info-row"><i class="fas fa-map-marker-alt"></i> <span>${o.address}</span></div>
+                        </div>
 
-            document.getElementById('modalBody').innerHTML = `<p><strong>${o.customerName}</strong> (${o.phone})</p><p>${o.address}</p><hr><ul style="padding-right:20px; line-height:1.8;">${items}</ul>${extraInfo}<h3 style="color:var(--red)">${o.total} ج</h3>`;
-            
-            const act = document.getElementById('modalActions');
-            const alertBox = document.getElementById('cancelAlert');
-            act.innerHTML = ''; 
+                        <!-- تنبيه طلب الإلغاء -->
+                        ${o.cancelRequest ? `
+                            <div style="background:#fff3cd; color:#856404; padding:12px; border-radius:8px; margin-bottom:15px; border:1px solid #ffeeba;">
+                                <i class="fas fa-exclamation-circle"></i> <strong>العميل يطلب الإلغاء!</strong><br>
+                                <small>السبب: ${o.cancelReason || 'غير محدد'}</small>
+                            </div>
+                        ` : ''}
 
+                        <!-- قائمة الطلبات -->
+                        <table class="order-items-table">
+                            <thead>
+                                <tr><th>الصنف</th><th style="text-align:center;">الكمية</th><th style="text-align:left;">السعر</th></tr>
+                            </thead>
+                            <tbody>${itemsHtml}</tbody>
+                        </table>
+
+                        <!-- ملخص الحساب -->
+                        <div class="price-summary">
+                            <div class="summary-row"><span>المجموع الفرعي</span><span>${o.total} ج</span></div>
+                            <div class="summary-row"><span>خدمة التوصيل</span><span>0 ج</span></div>
+                            <div class="summary-row total-row"><span>الإجمالي</span><span>${o.total} ج</span></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" id="modalActionsArea">
+                        <!-- سيتم ملء الأزرار هنا -->
+                    </div>
+                    <button class="btn-close-modal" style="width:100%; border-radius:0; padding:10px;" onclick="document.getElementById('orderModal').style.display='none'">إغلاق النافذة</button>
+                </div>
+            `;
+
+            // إدارة الأزرار بناءً على الحالة
+            const footer = document.getElementById('modalActionsArea');
             if(o.cancelRequest) {
-                alertBox.style.display = 'block';
-                document.getElementById('cancelReasonText').innerText = o.cancelReason;
-                act.innerHTML = `<button class="btn-red" onclick="rejectOrder('${k}')">✔ موافقة على الإلغاء</button><button class="btn-blue" onclick="rejCancelReq('${k}')">✖ رفض (استكمال الطلب)</button>`;
+                footer.innerHTML = `
+                    <button class="btn-red" onclick="rejectOrder('${k}')">موافقة على الإلغاء</button>
+                    <button class="btn-blue" onclick="rejCancelReq('${k}')">رفض الإلغاء واستكمال الطلب</button>
+                `;
             } else {
-                alertBox.style.display = 'none';
-                if(o.status==='pending'||o.status==='new') act.innerHTML = `<button class="btn-blue" style="background:var(--green)" onclick="upStatus('${k}','processing')">قبول وتجهيز</button><button class="btn-red" onclick="rejectOrder('${k}')">رفض</button>`;
-                else if(o.status==='processing') act.innerHTML = `<button class="btn-blue" onclick="upStatus('${k}','completed')">إنهاء</button>`;
+                if(o.status==='pending'||o.status==='new') {
+                    footer.innerHTML = `
+                        <button class="btn-blue" style="background:#27ae60" onclick="upStatus('${k}','processing')"><i class="fas fa-check"></i> قبول وتجهيز</button>
+                        <button class="btn-red" onclick="rejectOrder('${k}')"><i class="fas fa-times"></i> رفض الطلب</button>
+                    `;
+                } else if(o.status==='processing') {
+                    footer.innerHTML = `
+                        <button class="btn-blue" style="background:var(--blue); width:100%;" onclick="upStatus('${k}','completed')"><i class="fas fa-moped"></i> تم التسليم / إنهاء</button>
+                    `;
+                } else {
+                    footer.style.display = 'none'; // في حالة الطلبات المنتهية أو الملغية سابقاً
+                }
             }
-            document.getElementById('orderModal').style.display = 'block';
+
+            document.getElementById('orderModal').style.display = 'flex';
         }
 
         window.upStatus = (k,s) => { update(ref(db,'orders/'+k), {status:s, handledBy:currentUser.name}); document.getElementById('orderModal').style.display='none'; }
