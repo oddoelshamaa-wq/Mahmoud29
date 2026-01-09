@@ -1401,95 +1401,93 @@
         }
 
         window.openOrder = function(k) {
+            // إيقاف صوت الإنذار إن وجد
             const alarm = document.getElementById('alarmSound');
-            alarm.pause(); alarm.currentTime = 0;
+            if(alarm) { alarm.pause(); alarm.currentTime = 0; }
 
             const o = allOrders[k]; if(!o) return;
             
-            // بناء جدول المنتجات
-            let itemsHtml = (o.items || o.cart || []).map(i => {
-                let options = i.variant ? `${i.variant.bread} ${i.variant.size != 'موحد' ? '- ' + i.variant.size : ''}` : 'سادة';
-                let note = i.note ? `<div style="color:orange; font-size:0.75rem;">⚠️ ملاحظة: ${i.note}</div>` : '';
-                return `
-                    <tr>
-                        <td>
-                            <span class="item-name-cell">${i.name}</span>
-                            <span class="item-meta">${options}</span>
-                            ${note}
-                        </td>
-                        <td style="text-align:center;">1</td>
-                        <td style="text-align:left; font-weight:bold;">${i.variant ? i.variant.price : i.price} ج</td>
-                    </tr>`;
-            }).join('');
-            
-            // بناء محتوى المودال الجديد
+            // منطق عرض صندوق الإلغاء
+            let cancellationBox = '';
+            if (o.status === 'cancelled') {
+                const reason = o.adminReason || o.cancelReason || 'لم يتم ذكر سبب محدد';
+                cancellationBox = `
+                    <div style="background: #fff5f5; border: 1px solid #feb2b2; border-right: 5px solid #f56565; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                        <h4 style="color: #c53030; margin: 0 0 5px 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-ban"></i> تم إلغاء الطلب
+                        </h4>
+                        <div style="color: #4a5568; font-size: 0.95rem;">
+                            <strong>السبب:</strong> ${reason}
+                        </div>
+                        ${o.handledBy ? `<div style="font-size: 0.8rem; color: #718096; margin-top: 8px; border-top: 1px dashed #feb2b2; padding-top: 5px;">تم الإلغاء بواسطة: ${o.handledBy}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            // بناء جدول المنتجات (الأصناف)
+            let itemsHtml = (o.items || o.cart || []).map(i => `
+                <tr>
+                    <td style="padding: 12px 10px; border-bottom: 1px solid #f0f0f0;">
+                        <div style="font-weight: bold; color: #333;">${i.name}</div>
+                        <div style="font-size: 0.75rem; color: #777;">${i.variant ? i.variant.bread : 'كايزر - الصغير'}</div>
+                    </td>
+                    <td style="text-align:center; padding: 12px 10px; border-bottom: 1px solid #f0f0f0;">${i.count || 1}</td>
+                    <td style="text-align:left; font-weight:bold; padding: 12px 10px; border-bottom: 1px solid #f0f0f0;">${i.variant ? i.variant.price : i.price} ج</td>
+                </tr>
+            `).join('');
+
+            // رسم المودال (النافذة)
             document.getElementById('orderModal').innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <span style="font-weight:bold;"><i class="fas fa-receipt"></i> طلب رقم: #${k.slice(-4)}</span>
-                        <span style="font-size:0.8rem; opacity:0.8;">${new Date(o.timestamp).toLocaleString('ar-EG')}</span>
+                <div class="modal-content" style="padding:0; border-radius: 15px; overflow: hidden; border:none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                    <div class="modal-header" style="background: #18248b; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight:bold; font-size: 1.1rem;"><i class="fas fa-receipt"></i> طلب رقم: #${k.slice(-4)}</span>
+                        <span style="font-size:0.85rem; opacity:0.8;">${new Date(o.timestamp).toLocaleString('ar-EG')}</span>
                     </div>
                     
-                    <div class="modal-body-content">
+                    <div class="modal-body-content" style="padding: 20px; background: white;">
+                        
+                        <!-- صندوق سبب الإلغاء يظهر هنا فقط إذا كان ملغي -->
+                        ${cancellationBox}
+
                         <!-- بيانات العميل -->
-                        <div class="customer-info-card">
-                            <div class="info-row"><i class="fas fa-user"></i> <strong>${o.customerName}</strong></div>
-                            <div class="info-row"><i class="fas fa-phone"></i> <span dir="ltr">${o.phone}</span></div>
-                            <div class="info-row"><i class="fas fa-map-marker-alt"></i> <span>${o.address}</span></div>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                            <div style="margin-bottom:8px; display:flex; align-items:center; gap:10px;"><i class="fas fa-user" style="color: #18248b; width:15px;"></i> <strong>${o.customerName}</strong></div>
+                            <div style="margin-bottom:8px; display:flex; align-items:center; gap:10px;"><i class="fas fa-phone" style="color: #18248b; width:15px;"></i> <span dir="ltr">${o.phone}</span></div>
+                            <div style="display:flex; align-items:center; gap:10px;"><i class="fas fa-map-marker-alt" style="color: #18248b; width:15px;"></i> <span>${o.address}</span></div>
                         </div>
 
-                        <!-- تنبيه طلب الإلغاء -->
-                        ${o.cancelRequest ? `
-                            <div style="background:#fff3cd; color:#856404; padding:12px; border-radius:8px; margin-bottom:15px; border:1px solid #ffeeba;">
-                                <i class="fas fa-exclamation-circle"></i> <strong>العميل يطلب الإلغاء!</strong><br>
-                                <small>السبب: ${o.cancelReason || 'غير محدد'}</small>
-                            </div>
-                        ` : ''}
-
-                        <!-- قائمة الطلبات -->
-                        <table class="order-items-table">
+                        <!-- جدول الأصناف -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                             <thead>
-                                <tr><th>الصنف</th><th style="text-align:center;">الكمية</th><th style="text-align:left;">السعر</th></tr>
+                                <tr style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase;">
+                                    <th style="text-align: right; padding-bottom: 10px;">الصنف</th>
+                                    <th style="padding-bottom: 10px;">الكمية</th>
+                                    <th style="text-align: left; padding-bottom: 10px;">السعر</th>
+                                </tr>
                             </thead>
                             <tbody>${itemsHtml}</tbody>
                         </table>
 
                         <!-- ملخص الحساب -->
-                        <div class="price-summary">
-                            <div class="summary-row"><span>المجموع الفرعي</span><span>${o.total} ج</span></div>
-                            <div class="summary-row"><span>خدمة التوصيل</span><span>0 ج</span></div>
-                            <div class="summary-row total-row"><span>الإجمالي</span><span>${o.total} ج</span></div>
+                        <div style="background: #f1f5f9; padding: 15px; border-radius: 10px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem;">
+                                <span>المجموع الفرعي</span>
+                                <span>${o.total} ج</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem;">
+                                <span>خدمة التوصيل</span>
+                                <span>0 ج</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; color: #8c0104; border-top: 1px solid #cbd5e1; margin-top: 10px; padding-top: 10px;">
+                                <span>الإجمالي</span>
+                                <span>${o.total} ج</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="modal-footer" id="modalActionsArea">
-                        <!-- سيتم ملء الأزرار هنا -->
-                    </div>
-                    <button class="btn-close-modal" style="width:100%; border-radius:0; padding:10px;" onclick="document.getElementById('orderModal').style.display='none'">إغلاق النافذة</button>
+                    <button class="btn-close-modal" style="width:100%; border:none; background: #e2e8f0; padding: 12px; font-weight:bold; cursor:pointer;" onclick="document.getElementById('orderModal').style.display='none'">إغلاق النافذة</button>
                 </div>
             `;
-
-            // إدارة الأزرار بناءً على الحالة
-            const footer = document.getElementById('modalActionsArea');
-            if(o.cancelRequest) {
-                footer.innerHTML = `
-                    <button class="btn-red" onclick="rejectOrder('${k}')">موافقة على الإلغاء</button>
-                    <button class="btn-blue" onclick="rejCancelReq('${k}')">رفض الإلغاء واستكمال الطلب</button>
-                `;
-            } else {
-                if(o.status==='pending'||o.status==='new') {
-                    footer.innerHTML = `
-                        <button class="btn-blue" style="background:#27ae60" onclick="upStatus('${k}','processing')"><i class="fas fa-check"></i> قبول وتجهيز</button>
-                        <button class="btn-red" onclick="rejectOrder('${k}')"><i class="fas fa-times"></i> رفض الطلب</button>
-                    `;
-                } else if(o.status==='processing') {
-                    footer.innerHTML = `
-                        <button class="btn-blue" style="background:var(--blue); width:100%;" onclick="upStatus('${k}','completed')"><i class="fas fa-moped"></i> تم التسليم / إنهاء</button>
-                    `;
-                } else {
-                    footer.style.display = 'none'; // في حالة الطلبات المنتهية أو الملغية سابقاً
-                }
-            }
 
             document.getElementById('orderModal').style.display = 'flex';
         }
