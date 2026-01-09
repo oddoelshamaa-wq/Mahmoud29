@@ -8,21 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --bg-dark: #0f172a;       /* لون الخلفية الأساسي */
-            --card-dark: #1e293b;     /* لون الكروت */
-            --sidebar-dark: #1e1b4b;  /* لون القائمة الجانبية */
-            --neon-blue: #38bdf8;     /* لون النيون الأزرق */
-            --neon-red: #ef4444;      /* لون النيون الأحمر */
-            --text-silver: #cbd5e1;   /* لون النص الفضي */
-            --glass: rgba(30, 41, 59, 0.7);
-            --blue: #18248b;
-            --red: #8c0104;
-            --white: #ffffff;
-            --green: #27ae60;
-            --gray: #f0f2f5;
-        }
-        body { margin: 0; font-family: 'Cairo', sans-serif; display: flex; background-color: var(--bg-dark); color: var(--text-silver); height: 100vh; overflow: hidden; perspective: 1500px; }
+        :root { --blue: #18248b; --red: #8c0104; --white: #ffffff; --green: #27ae60; --gray: #f0f2f5; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; background: var(--gray); height: 100vh; overflow: hidden; }
 
         /* تصميم شاشة الدخول الجديد */
         #loginScreen {
@@ -42,16 +29,14 @@
 
         /* الكارت الأبيض (صندوق الدخول) */
         .login-card {
-            background: var(--bg-3d);
+            background: rgba(255, 255, 255, 1);
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 9px 9px 16px var(--shadow-dark),
-                        -9px -9px 16px var(--shadow-light);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
             width: 100%;
             max-width: 400px;
             text-align: center;
             animation: slideUp 0.6s ease-out;
-            transform-style: preserve-3d;
         }
 
         @keyframes slideUp {
@@ -140,9 +125,9 @@
         }
 
         /* Sidebar */
-        .sidebar { width: 260px; background: var(--sidebar-dark); border-left: 1px solid rgba(255,255,255,0.05); box-shadow: 10px 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: var(--text-silver); padding: 20px 10px; display: flex; flex-direction: column; }
+        .sidebar { width: 260px; background: var(--blue); color: white; padding: 20px 10px; display: flex; flex-direction: column; border-left: 5px solid var(--red); }
         .menu-item { padding: 12px; margin: 5px 0; cursor: pointer; border-radius: 5px; display: flex; align-items: center; gap: 10px; transition: 0.3s; position: relative; }
-        .menu-item:hover, .menu-item.active { background: rgba(56, 189, 248, 0.1); border-right: 4px solid var(--neon-blue); color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+        .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.1); border-right: 4px solid var(--red); }
         
         /* Notification Counter */
         .badge-counter { background: var(--red); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; position: absolute; left: 15px; display: none; font-weight: bold; box-shadow: 0 0 5px white; animation: pulse 1s infinite; }
@@ -154,9 +139,8 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* General UI */
-        .form-box { background: var(--card-dark); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1); margin-bottom: 20px; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-sizing: border-box; background: var(--bg-dark); color: var(--text-silver); }
-        input:focus, select:focus, textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); outline: none; }
+        .form-box { background: white; padding: 25px; border-radius: 10px; max-width: 900px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         .users-table { width: 100%; border-collapse: collapse; background: white; margin-top: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .users-table thead tr { background-color: #1a237e; color: white; }
         .users-table th, .users-table td { padding: 15px; text-align: center; border-bottom: 1px solid #eee; }
@@ -166,21 +150,11 @@
         .btn-warning { background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 5px; }
 
         /* Order Cards */
-        .order-card.modern, .dash-card, .form-box {
-            background: var(--card-dark);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4),
-                        inset 0 1px 1px rgba(255,255,255,0.1);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-style: preserve-3d;
-        }
-
-        .order-card.modern:hover {
-            transform: translateZ(30px) rotateX(2deg);
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2), 0 30px 60px rgba(0,0,0,0.6);
-        }
+        .order-card { background: white; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 5px solid var(--blue); cursor: pointer; position: relative; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .order-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .cancel-requested { border-left-color: orange !important; background-color: #fff8e1; animation: flashOrange 1.5s infinite alternate; }
+        @keyframes flashOrange { from { box-shadow: 0 0 5px orange; } to { box-shadow: 0 0 15px orange; } }
+        .cancel-badge { background: var(--red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; position: absolute; top: 10px; left: 10px; z-index: 10; }
 
         /* ========================================= */
         /*        MODERN TEAM CHAT STYLES            */
@@ -449,21 +423,18 @@
         /* ========================================= */
 
         /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; justify-content: center; align-items: center; }
         /* تحسين شكل المودال ليكون أكثر عصرية */
         .modal-content {
-            background: var(--card-dark);
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            background: #fdfdfd;
             padding: 0;
-            border-radius: 30px;
+            border-radius: 15px;
             width: 550px;
             max-width: 95%;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 30px rgba(56, 189, 248, 0.1);
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             overflow: hidden;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
         }
-        .modal-content.show { transform: scale(1); }
 
         .modal-header {
             background: var(--blue);
@@ -601,21 +572,19 @@
 
         /* تنسيق الجدول والبادجات */
         .status-badge {
-            padding: 6px 15px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px currentColor;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
         }
-        .status-completed { color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; }
-        .status-cancelled { color: #f43f5e; background: rgba(244, 63, 94, 0.1); border: 1px solid #f43f5e; }
-        .status-processing { color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-processing { background: #fff3cd; color: #856404; }
 
-        .users-table { background: transparent; border-radius: 15px; overflow: hidden; }
-        .users-table thead tr { background: rgba(15, 23, 42, 0.8); }
-        .users-table th, .users-table td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text-silver); }
-        .users-table td { background: rgba(30, 41, 59, 0.4); }
-        .users-table tr:hover td { background: rgba(56, 189, 248, 0.05); }
+        .users-table { border-radius: 15px; overflow: hidden; border: none; }
+        .users-table thead tr { background: var(--blue); }
+        .users-table th { font-weight: 500; padding: 18px; }
+        .users-table td { background: white; padding: 15px; border-bottom: 1px solid #f0f2f5; }
 
         /* تحسين خلفية الصفحة الرئيسية */
         .main {
@@ -739,7 +708,6 @@
             to { opacity: 1; transform: translateX(0); }
         }
         .new-entry { animation: slideIn 0.4s ease-out; }
-
     </style>
 </head>
 <body>
@@ -1778,13 +1746,6 @@
         document.getElementById('saveProdBtn').addEventListener('click', () => { let n=document.getElementById('prodName').value, i=document.getElementById('prodImg').value, c=document.getElementById('prodCatSelect').value; if(n && tempVariants.length) { push(ref(db,'products'),{name:n,img:i,cat:c,variants:tempVariants,available:true}); alert('تم'); tempVariants=[]; document.getElementById('prodName').value=''; document.getElementById('tempVarsDisplay').innerHTML=''; } });
         function renderProdManage(data) { document.getElementById('manageProdList').innerHTML=Object.entries(data).map(([k,p])=>`<tr><td>${p.name}</td><td>${p.available?'متاح':'مغلق'}</td><td><button class="btn-blue" onclick="window.tog('${k}',${p.available})">تغيير</button><button class="btn-red" onclick="window.delP('${k}')">حذف</button></td></tr>`).join(''); }
         window.tog=(k,s)=>update(ref(db,'products/'+k),{available:!s}); window.delP=(k)=>confirm('حذف؟')&&remove(ref(db,'products/'+k));
-
-        // Mouse movement effects for 3D
-        document.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth - 0.5) * 20;
-            const y = (e.clientY / window.innerHeight - 0.5) * 20;
-            document.body.style.transform = `rotateX(${y}deg) rotateY(${x}deg)`;
-        });
 
     </script>
 </body>
