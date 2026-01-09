@@ -605,6 +605,52 @@
             height: 80vh;
         }
 
+        /* تحويل جدول إدارة المنتجات إلى ستايل Dark 3D */
+        #manageProdList {
+            background-color: #0f172a; /* خلفية القسم الأساسي */
+        }
+
+        /* تنسيق الصفوف ككروت منفصلة */
+        .users-table tr {
+            background-color: transparent;
+        }
+
+        .users-table td {
+            background-color: #1e293b !important; /* لون غامق صريح لكل خلية */
+            color: #ffffff !important;            /* لون النص أبيض ناصع */
+            border: none !important;
+            padding: 20px 15px !important;
+        }
+
+        /* إضافة حواف دائرية للصف (كأنه كارت) */
+        .users-table tr td:first-child {
+            border-radius: 0 15px 15px 0; /* حواف دائرية لليمين (بداية الصف) */
+        }
+
+        .users-table tr td:last-child {
+            border-radius: 15px 0 0 15px; /* حواف دائرية لليسار (نهاية الصف) */
+        }
+
+        /* تأثير عند مرور الماوس على الصف */
+        .users-table tr:hover td {
+            background-color: #2d3748 !important; /* تفتيح بسيط جداً يعطي إحساس التفاعل */
+            transition: 0.3s ease;
+        }
+
+        /* تنسيق النصوص داخل الجدول */
+        .product-name-title {
+            color: #ffffff !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3); /* ظل خفيف خلف النص لزيادة الوضوح */
+        }
+
+        .product-cat-subtitle {
+            color: #94a3b8 !important; /* لون فضي هادئ للتصنيف تحت الاسم */
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
         .column-header {
             padding: 15px;
             border-radius: 15px;
@@ -1777,56 +1823,37 @@
         let allProductsData = {};
 
         function renderProdManage(data) {
-            allProductsData = data;
             const list = document.getElementById('manageProdList');
-
-            // نتحقق من صلاحية المستخدم المسجل حالياً
             const isAdmin = currentUser && currentUser.role === 'admin';
 
             list.innerHTML = Object.entries(data).map(([k, p]) => {
-                // أزرار التحكم (نفس المنطق السابق)
-                const editBtn = isAdmin ? `
-                    <button class="btn-blue" onclick="window.openEditProd('${k}')" style="background:#f39c12; margin-left:5px;">
-                        <i class="fas fa-edit"></i> تعديل
-                    </button>` : '';
-
-                const deleteBtn = isAdmin ? `
-                    <button class="btn-red" onclick="window.delP('${k}')">
-                        <i class="fas fa-trash"></i> حذف
-                    </button>` : '';
-
-                const toggleBtn = `
-                    <button class="btn-blue" onclick="window.tog('${k}',${p.available})">
-                        <i class="fas fa-sync"></i> ${p.available ? 'إغلاق' : 'فتح'}
-                    </button>`;
+                const editBtn = isAdmin ? `<button class="btn-blue" onclick="window.openEditProd('${k}')" style="background:#f39c12; margin-left:5px;"><i class="fas fa-edit"></i> تعديل</button>` : '';
+                const deleteBtn = isAdmin ? `<button class="btn-red" onclick="window.delP('${k}')"><i class="fas fa-trash"></i> حذف</button>` : '';
+                const toggleBtn = `<button class="btn-blue" onclick="window.tog('${k}',${p.available})"><i class="fas fa-sync"></i> ${p.available ? 'إغلاق' : 'فتح'}</button>`;
 
                 return `
-                <tr>
-                    <!-- خلية المنتج (صورة + اسم) -->
-                    <td style="display: flex; align-items: center; gap: 15px; text-align: right; padding-right: 20px;">
-                        <div style="position: relative; width: 60px; height: 60px;">
-                            <img src="${p.img || 'https://via.placeholder.com/60'}"
-                                 style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.3);"
-                                 onerror="this.src='https://cdn-icons-png.flaticon.com/512/135/135763.png'">
+                <tr style="border-bottom: 8px solid #0f172a;"> <!-- فاصل بين الكروت -->
+                    <td style="display: flex; align-items: center; gap: 15px; text-align: right;">
+                        <div style="width: 65px; height: 65px; flex-shrink: 0;">
+                            <img src="${p.img || 'placeholder.png'}"
+                                 style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover; border: 2px solid #334155; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
                         </div>
                         <div>
-                            <div style="font-weight: bold; color: white; font-size: 1.1rem;">${p.name}</div>
-                            <div style="font-size: 0.8rem; color: #888;">${p.cat || 'بدون تصنيف'}</div>
+                            <div class="product-name-title">${p.name}</div>
+                            <div class="product-cat-subtitle">${p.cat || 'جريل وبرجر'}</div>
                         </div>
                     </td>
-
-                    <!-- خلية الحالة -->
-                    <td>
+                    <td style="text-align: center;">
                         <span class="status-badge ${p.available ? 'status-completed' : 'status-cancelled'}">
-                            ${p.available ? 'متاح' : 'غير متاح'}
+                            ${p.available ? 'متاح الآن' : 'غير متاح'}
                         </span>
                     </td>
-
-                    <!-- خلية الإجراءات -->
-                    <td>
-                        ${editBtn}
-                        ${toggleBtn}
-                        ${deleteBtn}
+                    <td style="text-align: left;">
+                        <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                            ${editBtn}
+                            ${toggleBtn}
+                            ${deleteBtn}
+                        </div>
                     </td>
                 </tr>`;
             }).join('');
