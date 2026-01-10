@@ -361,8 +361,16 @@
 
         onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
         onValue(ref(db, 'categories'), (s) => {
-            const nav=document.getElementById('categoryNav'); nav.innerHTML='<button class="cat-btn active" onclick="window.filterCat(\'all\',this)">الكل</button>';
-            Object.values(s.val()||{}).forEach(c=>nav.innerHTML+=`<button class="cat-btn" onclick="window.filterCat('${c.name}',this)">${c.name}</button>`);
+            const nav = document.getElementById('categoryNav');
+            nav.innerHTML = '<button class="cat-btn active" onclick="window.filterCat(\'all\',this)">الكل</button>';
+
+            const data = s.val() || {};
+            // تحويل الكائن لمصفوفة وترتيبها حسب order
+            const sortedCats = Object.values(data).sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            sortedCats.forEach(c => {
+                nav.innerHTML += `<button class="cat-btn" onclick="window.filterCat('${c.name}',this)">${c.name}</button>`;
+            });
         });
         onValue(ref(db, 'global_extras'), (s) => { globalExtrasList = s.val() || {}; });
 
