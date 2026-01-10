@@ -966,6 +966,27 @@
 
         <!-- 5. Products -->
         <div id="products" class="section">
+            <!-- قسم إدارة الإضافات العامة (تظهر لكل المنتجات) -->
+            <div class="form-box">
+                <h3><i class="fas fa-plus-circle"></i> إدارة الإضافات العامة (تطبق على الكل)</h3>
+                <p style="font-size: 0.8rem; color: #666;">أي إضافة تضعها هنا ستظهر في جميع المنتجات تلقائياً.</p>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <input type="text" id="globalExName" placeholder="اسم الإضافة (مثال: جبنة)" style="margin:0;">
+                    <input type="number" id="globalExPrice" placeholder="السعر" style="margin:0; width: 100px;">
+                    <button class="btn-blue" onclick="addGlobalExtra()">إضافة للكل</button>
+                </div>
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>الإضافة</th>
+                            <th>السعر</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="globalExtrasTable"></tbody>
+                </table>
+            </div>
+
             <div class="form-box">
                 <h3>إضافة منتج/عرض</h3>
                 <label>الاسم</label><input type="text" id="prodName">
@@ -1133,6 +1154,7 @@
         let activeChatUser = null;
         let tempVariants = [];
         let tempExtras = [];
+        let globalExtrasList = {};
         let allOrders = {};
         let allUsersData = {};
         let chatsLoaded = false;
@@ -1235,6 +1257,10 @@
                 renderProdManage(data);
             });
             onValue(ref(db, 'categories'), (s) => populateCats(s.val() || {}));
+            onValue(ref(db, 'global_extras'), (s) => {
+                globalExtrasList = s.val() || {};
+                renderGlobalExtrasTable();
+            });
             onValue(ref(db, 'chats'), (s) => handleChatUpdate(s.val() || {}));
             onValue(ref(db, 'team_chat'), (s) => renderTeamChat(s.val() || {}));
         }
@@ -1970,6 +1996,24 @@
                 </div>
             `).join('');
 
+            // --- الجزء الجديد: التحكم في الإضافات لهذا المنتج تحديداً ---
+            const extrasArea = document.createElement('div');
+            extrasArea.innerHTML = `<h4 style="margin-top:15px; color:#e67e22;">إلغاء تفعيل إضافات لهذا المنتج:</h4>`;
+
+            // جلب الإضافات المستثناة المسجلة لهذا المنتج (إن وجدت)
+            const excluded = p.excludedExtras || [];
+
+            Object.entries(globalExtrasList).forEach(([exId, ex]) => {
+                const isChecked = !excluded.includes(exId); // تكون علامة الصح موجودة لو مش مستثناة
+                extrasArea.innerHTML += `
+                    <label style="display:block; background:#fff; padding:8px; border-bottom:1px solid #eee;">
+                        <input type="checkbox" class="prod-extra-toggle" data-exid="${exId}" ${isChecked ? 'checked' : ''}>
+                        تفعيل ${ex.name} (+${ex.price}ج)
+                    </label>
+                `;
+            });
+            varsList.appendChild(extrasArea);
+
             // زر الحفظ
             document.getElementById('editProdActions').innerHTML = `
                 <button class="btn-blue" style="background:var(--green); width:100%;" onclick="window.saveProdEdit('${id}', ${p.variants.length})">
@@ -1994,11 +2038,20 @@
                 });
             }
 
+            // جمع الإضافات التي تم "إلغاء تحديدها" (المستثناة)
+            const excludedExtras = [];
+            document.querySelectorAll('.prod-extra-toggle').forEach(checkbox => {
+                if(!checkbox.checked) {
+                    excludedExtras.push(checkbox.dataset.exid);
+                }
+            });
+
             if(newName && newVariants.length > 0) {
                 update(ref(db, 'products/' + id), {
                     name: newName,
                     cat: newCat,
-                    variants: newVariants
+                    variants: newVariants,
+                    excludedExtras: excludedExtras
                 }).then(() => {
                     alert("تم تحديث السعر والبيانات بنجاح ✅");
                     document.getElementById('editProdModal').style.display = 'none';
@@ -2007,6 +2060,36 @@
         }
 
         window.tog=(k,s)=>update(ref(db,'products/'+k),{available:!s}); window.delP=(k)=>confirm('حذف؟')&&remove(ref(db,'products/'+k));
+
+        // Global Extras Functions
+        window.addGlobalExtra = function() {
+            const name = document.getElementById('globalExName').value.trim();
+            const price = parseInt(document.getElementById('globalExPrice').value);
+            if(name && price > 0) {
+                push(ref(db, 'global_extras'), {
+                    name: name,
+                    price: price
+                }).then(() => {
+                    document.getElementById('globalExName').value = '';
+                    document.getElementById('globalExPrice').value = '';
+                });
+            } else {
+                alert('يرجى إدخال اسم و سعر صحيح');
+            }
+        };
+
+        function renderGlobalExtrasTable() {
+            const tbody = document.getElementById('globalExtrasTable');
+            tbody.innerHTML = Object.entries(globalExtrasList).map(([id, ex]) => `
+                <tr>
+                    <td>${ex.name}</td>
+                    <td>${ex.price} ج</td>
+                    <td><button class="btn-red" onclick="deleteGlobalExtra('${id}')">حذف من الكل</button></td>
+                </tr>
+            `).join('');
+        }
+
+        window.deleteGlobalExtra = (id) => confirm('سيتم حذفها من جميع المنتجات، متأكد؟') && remove(ref(db, 'global_extras/' + id));
 
     </script>
 </body>
