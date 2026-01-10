@@ -754,6 +754,17 @@
             to { opacity: 1; transform: translateX(0); }
         }
         .new-entry { animation: slideIn 0.4s ease-out; }
+
+/* كلاس للفلاش (ينور ويطفي) */
+@keyframes flashRed {
+    0% { background-color: white; box-shadow: 0 0 0 rgba(255,0,0,0); }
+    50% { background-color: #fff0f0; box-shadow: 0 0 15px rgba(255,0,0,0.5); border-left-color: red; }
+    100% { background-color: white; box-shadow: 0 0 0 rgba(255,0,0,0); }
+}
+.new-order-alert {
+    animation: flashRed 1s infinite; /* يشتغل للأبد لحد ما يتفتح */
+    border-left: 5px solid red !important;
+}
     </style>
 </head>
 <body>
@@ -970,6 +981,17 @@
                     <button class="btn-blue" style="background:var(--green); width:auto;" id="addVarBtn">إضافة خيار</button>
                     <div id="tempVarsDisplay" style="margin-top:15px;"></div>
                 </div>
+                <!-- بداية كود قسم الإضافات -->
+                <div style="background:#fff3e0; padding:15px; margin:15px 0; border:1px solid #ffe0b2; border-radius:5px;">
+                    <h4 style="margin-top:0; color:#e67e22;">الإضافات (اختياري) - كاتشب، جبنة، إلخ</h4>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="exName" placeholder="اسم الإضافة (مثال: كاتشب زيادة)" style="flex:2;">
+                        <input type="number" id="exPrice" placeholder="السعر (مثال: 5)" style="flex:1;">
+                    </div>
+                    <button class="btn-blue" style="background:#e67e22; width:auto;" id="addExBtn">إضافة للقائمة</button>
+                    <div id="tempExtrasDisplay" style="margin-top:15px;"></div>
+                </div>
+                <!-- نهاية كود قسم الإضافات -->
                 <button class="btn-blue" style="width:100%" id="saveProdBtn">حفظ المنتج</button>
             </div>
             
@@ -1110,6 +1132,7 @@
         let currentUser = JSON.parse(localStorage.getItem('nagaf_staff_user'));
         let activeChatUser = null;
         let tempVariants = [];
+        let tempExtras = [];
         let allOrders = {};
         let allUsersData = {};
         let chatsLoaded = false;
@@ -1336,54 +1359,53 @@
             const n = document.getElementById('newOrdersList');
             const p = document.getElementById('processingOrdersList');
             n.innerHTML = ''; p.innerHTML = '';
-            let hasNewOrder = false;
 
-            // تحويل البيانات لمصفوفة لترتيبها حسب الأحدث
+            let shouldPlaySound = false; // متغير عشان نعرف هنشغل الصوت ولا لأ
+
             const sortedOrders = Object.entries(data).reverse();
 
             sortedOrders.forEach(([k, o]) => {
                 const timeStr = new Date(o.timestamp).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
 
-                const cardHtml = `
-                    <div class="order-card modern new-entry ${o.cancelRequest ? 'cancel-requested' : ''}" onclick="openOrder('${k}')">
-                        ${o.cancelRequest ? '<span class="cancel-badge">طلب إلغاء!</span>' : ''}
+                // هل الطلب جديد ولم يفتحه الأدمن بعد؟
+                const isNewUnseen = (o.status === 'pending' || o.status === 'new') && !o.seenByAdmin;
 
+                if(isNewUnseen) {
+                    shouldPlaySound = true; // لو فيه ولو طلب واحد جديد، شغل الصوت
+                }
+
+                const cardHtml = `
+                    <div class="order-card modern ${isNewUnseen ? 'new-order-alert' : ''}" onclick="openOrder('${k}')">
                         <div class="card-top">
                             <span class="order-number">#${k.slice(-4)}</span>
                             <span class="order-time">${timeStr}</span>
                         </div>
-
                         <h4 class="cust-name">${o.customerName}</h4>
-
-                        <div class="info-line">
-                            <i class="fas fa-phone-alt"></i> ${o.phone}
-                        </div>
-
-                        <div class="info-line">
-                            <i class="fas fa-map-marker-alt"></i> ${o.address.length > 35 ? o.address.substring(0,35)+'...' : o.address}
-                        </div>
-
+                        <div class="info-line"><i class="fas fa-map-marker-alt"></i> ${o.address}</div>
                         <div class="card-footer-modern">
-                            <span class="order-price-tag">${o.total} <small>ج</small></span>
-                            <span class="btn-view">التفاصيل <i class="fas fa-chevron-left"></i></span>
+                            <span class="order-price-tag">${o.total} ج</span>
+                            <span class="btn-view">${isNewUnseen ? 'طلب جديد!' : 'التفاصيل'}</span>
                         </div>
                     </div>`;
 
                 if (o.status === 'pending' || o.status === 'new') {
                     n.innerHTML += cardHtml;
-                    if (!o.seenByAdmin) {
-                        hasNewOrder = true;
-                        update(ref(db, 'orders/' + k), { seenByAdmin: true });
-                    }
                 } else if (o.status === 'processing') {
                     p.innerHTML += cardHtml;
                 }
             });
 
+            // التحكم في الصوت
             const alarm = document.getElementById('alarmSound');
-            if (hasNewOrder) {
-                alarm.currentTime = 0;
-                alarm.play().catch(() => {});
+            if (shouldPlaySound) {
+                // تشغيل الصوت لو مش شغال
+                if (alarm.paused) {
+                    alarm.currentTime = 0;
+                    alarm.play().catch(e => console.log("تحتاج لتفاعل مع الصفحة لتشغيل الصوت"));
+                }
+            } else {
+                // إيقاف الصوت لو مفيش طلبات جديدة
+                alarm.pause();
             }
         }
 
@@ -1401,102 +1423,122 @@
         }
 
         window.openOrder = function(k) {
-            // إيقاف صوت الإنذار إن وجد
-            const alarm = document.getElementById('alarmSound');
-            if(alarm) { alarm.pause(); alarm.currentTime = 0; }
+    // 1. إيقاف الصوت بمجرد فتح الطلب
+    const alarm = document.getElementById('alarmSound');
+    if(alarm) {
+        alarm.pause();
+        alarm.currentTime = 0;
+    }
 
-            const o = allOrders[k]; if(!o) return;
+    // 2. تحديث أن الطلب تمت رؤيته عشان الفلاش يوقف
+    update(ref(db, 'orders/' + k), { seenByAdmin: true });
+
+    const o = allOrders[k];
+    if(!o) return;
+
+    // بناء جدول الأصناف (كما هو)
+    let itemsHtml = (o.items || []).map(i => {
+        let extrasStr = i.extras && i.extras.length ? `<div style="font-size:0.75rem; color:#d35400;">+ ${i.extras.map(e=>e.name).join('، ')}</div>` : '';
+        return `
+        <tr>
+            <td style="padding:10px; border-bottom:1px solid #eee;">
+                <b>${i.name}</b> <small>(${i.variant.bread})</small>
+                ${extrasStr}
+                ${i.note ? `<div style="color:red; font-size:0.8rem;">ملاحظة: ${i.note}</div>` : ''}
+            </td>
+            <td style="text-align:center; border-bottom:1px solid #eee;">x${i.quantity || 1}</td>
+            <td style="border-bottom:1px solid #eee;">${i.finalPrice || i.variant.price} ج</td>
+        </tr>`;
+    }).join('');
+
+    // 3. تحديد الأزرار التي ستظهر بناءً على حالة الطلب الحالية
+    let actionButtons = '';
+
+    if (o.status === 'pending' || o.status === 'new') {
+        // لو الطلب لسه جديد: يظهر زر "قبول وتحضير" وزر "رفض"
+        actionButtons = `
+            <button onclick="upStatus('${k}', 'processing')" class="btn-blue" style="background:#27ae60; flex:2;">
+                <i class="fas fa-fire"></i> قبول وبدء التحضير
+            </button>
+            <button onclick="rejectOrder('${k}')" class="btn-red" style="flex:1;">
+                <i class="fas fa-times"></i> رفض
+            </button>
+        `;
+    } else if (o.status === 'processing') {
+        // لو الطلب جاري التحضير: يظهر زر "تم التجهيز/التسليم"
+        actionButtons = `
+            <button onclick="upStatus('${k}', 'completed')" class="btn-blue" style="background:#2980b9; width:100%;">
+                <i class="fas fa-check-circle"></i> تم التجهيز والتسليم
+            </button>
+        `;
+    } else {
+        // لو مكتمل أو ملغي
+        actionButtons = `<div style="text-align:center; width:100%; color:#777; font-weight:bold;">هذا الطلب منتهي (${o.status === 'completed' ? 'مكتمل' : 'ملغي'})</div>`;
+    }
+
+    // رسم المودال
+    document.getElementById('orderModal').innerHTML = `
+        <div class="modal-content" style="border-radius: 15px; overflow: hidden; max-width:500px;">
+            <div class="modal-header" style="background: #18248b; color: white; padding: 15px; display:flex; justify-content:space-between;">
+                <span>طلب رقم: #${k.slice(-4)}</span>
+                <span style="font-size:0.8rem;">${new Date(o.timestamp).toLocaleTimeString('ar-EG')}</span>
+            </div>
             
-            // منطق عرض صندوق الإلغاء
-            let cancellationBox = '';
-            if (o.status === 'cancelled') {
-                const reason = o.adminReason || o.cancelReason || 'لم يتم ذكر سبب محدد';
-                cancellationBox = `
-                    <div style="background: #fff5f5; border: 1px solid #feb2b2; border-right: 5px solid #f56565; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
-                        <h4 style="color: #c53030; margin: 0 0 5px 0; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-ban"></i> تم إلغاء الطلب
-                        </h4>
-                        <div style="color: #4a5568; font-size: 0.95rem;">
-                            <strong>السبب:</strong> ${reason}
-                        </div>
-                        ${o.handledBy ? `<div style="font-size: 0.8rem; color: #718096; margin-top: 8px; border-top: 1px dashed #feb2b2; padding-top: 5px;">تم الإلغاء بواسطة: ${o.handledBy}</div>` : ''}
-                    </div>
-                `;
-            }
-
-            // بناء جدول المنتجات (الأصناف)
-            let itemsHtml = (o.items || o.cart || []).map(i => `
-                <tr>
-                    <td style="padding: 12px 10px; border-bottom: 1px solid #f0f0f0;">
-                        <div style="font-weight: bold; color: #333;">${i.name}</div>
-                        <div style="font-size: 0.75rem; color: #777;">${i.variant ? i.variant.bread : 'كايزر - الصغير'}</div>
-                    </td>
-                    <td style="text-align:center; padding: 12px 10px; border-bottom: 1px solid #f0f0f0;">${i.count || 1}</td>
-                    <td style="text-align:left; font-weight:bold; padding: 12px 10px; border-bottom: 1px solid #f0f0f0;">${i.variant ? i.variant.price : i.price} ج</td>
-                </tr>
-            `).join('');
-
-            // رسم المودال (النافذة)
-            document.getElementById('orderModal').innerHTML = `
-                <div class="modal-content" style="padding:0; border-radius: 15px; overflow: hidden; border:none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                    <div class="modal-header" style="background: #18248b; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight:bold; font-size: 1.1rem;"><i class="fas fa-receipt"></i> طلب رقم: #${k.slice(-4)}</span>
-                        <span style="font-size:0.85rem; opacity:0.8;">${new Date(o.timestamp).toLocaleString('ar-EG')}</span>
-                    </div>
-                    
-                    <div class="modal-body-content" style="padding: 20px; background: white;">
-                        
-                        <!-- صندوق سبب الإلغاء يظهر هنا فقط إذا كان ملغي -->
-                        ${cancellationBox}
-
-                        <!-- بيانات العميل -->
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-                            <div style="margin-bottom:8px; display:flex; align-items:center; gap:10px;"><i class="fas fa-user" style="color: #18248b; width:15px;"></i> <strong>${o.customerName}</strong></div>
-                            <div style="margin-bottom:8px; display:flex; align-items:center; gap:10px;"><i class="fas fa-phone" style="color: #18248b; width:15px;"></i> <span dir="ltr">${o.phone}</span></div>
-                            <div style="display:flex; align-items:center; gap:10px;"><i class="fas fa-map-marker-alt" style="color: #18248b; width:15px;"></i> <span>${o.address}</span></div>
-                        </div>
-
-                        <!-- جدول الأصناف -->
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                            <thead>
-                                <tr style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase;">
-                                    <th style="text-align: right; padding-bottom: 10px;">الصنف</th>
-                                    <th style="padding-bottom: 10px;">الكمية</th>
-                                    <th style="text-align: left; padding-bottom: 10px;">السعر</th>
-                                </tr>
-                            </thead>
-                            <tbody>${itemsHtml}</tbody>
-                        </table>
-
-                        <!-- ملخص الحساب -->
-                        <div style="background: #f1f5f9; padding: 15px; border-radius: 10px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem;">
-                                <span>المجموع الفرعي</span>
-                                <span>${o.total} ج</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem;">
-                                <span>خدمة التوصيل</span>
-                                <span>0 ج</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; color: #8c0104; border-top: 1px solid #cbd5e1; margin-top: 10px; padding-top: 10px;">
-                                <span>الإجمالي</span>
-                                <span>${o.total} ج</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button class="btn-close-modal" style="width:100%; border:none; background: #e2e8f0; padding: 12px; font-weight:bold; cursor:pointer;" onclick="document.getElementById('orderModal').style.display='none'">إغلاق النافذة</button>
+            <div class="modal-body-content" style="padding: 15px; max-height:60vh; overflow-y:auto;">
+                <!-- بيانات العميل -->
+                <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #eee;">
+                    <h3 style="margin:0 0 5px 0; color:#18248b;">${o.customerName}</h3>
+                    <div><i class="fas fa-phone"></i> ${o.phone}</div>
+                    <div><i class="fas fa-map-marker-alt"></i> ${o.address}</div>
+                    ${o.googleMaps ? `<a href="${o.googleMaps}" target="_blank" style="color:#2980b9; font-size:0.8rem;">عرض الموقع على الخريطة</a>` : ''}
                 </div>
-            `;
 
-            document.getElementById('orderModal').style.display = 'flex';
+                <!-- الأصناف -->
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead><tr style="background:#eee; font-size:0.9rem;"><th>الصنف</th><th>العدد</th><th>سعر</th></tr></thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+
+                <!-- الحساب -->
+                <div style="margin-top:15px; border-top:2px dashed #ccc; padding-top:10px;">
+                    <div style="display:flex; justify-content:space-between; font-size:1.2rem; font-weight:bold; color:#c0392b;">
+                        <span>الإجمالي المطلوب:</span>
+                        <span>${o.total} جنيه</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- أزرار التحكم -->
+            <div class="modal-footer" style="padding:15px; background:#eee; display:flex; gap:10px;">
+                ${actionButtons}
+                <button class="btn-close-modal" onclick="document.getElementById('orderModal').style.display='none'" style="width:auto; padding:0 15px;">إغلاق</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('orderModal').style.display = 'flex';
+}
+
+        window.upStatus = function(key, newStatus) {
+            if(confirm('هل أنت متأكد من تغيير حالة الطلب؟')) {
+                update(ref(db, 'orders/' + key), {
+                    status: newStatus,
+                    handledBy: currentUser.name // تسجيل اسم الموظف اللي غير الحالة
+                }).then(() => {
+                    document.getElementById('orderModal').style.display = 'none';
+                });
+            }
         }
 
-        window.upStatus = (k,s) => { update(ref(db,'orders/'+k), {status:s, handledBy:currentUser.name}); document.getElementById('orderModal').style.display='none'; }
-        window.rejectOrder = function(k) {
-            let reason = prompt("اكتب سبب الرفض/الإلغاء:");
+        // دالة رفض الطلب
+        window.rejectOrder = function(key) {
+            let reason = prompt("اكتب سبب الرفض (سيظهر للعميل):");
             if(reason) {
-                update(ref(db,'orders/'+k), { status: 'cancelled', adminReason: reason, cancelRequest: false, handledBy:currentUser.name });
+                update(ref(db, 'orders/' + key), {
+                    status: 'cancelled',
+                    adminReason: reason,
+                    handledBy: currentUser.name
+                });
                 document.getElementById('orderModal').style.display = 'none';
             }
         }
@@ -1816,7 +1858,50 @@
         }
 
         document.getElementById('addVarBtn').addEventListener('click', () => { let b=document.getElementById('vType').value, s=document.getElementById('vSize').value, p=document.getElementById('vPrice').value; if(b && p) { tempVariants.push({bread:b,size:s||'موحد',price:parseInt(p)}); document.getElementById('tempVarsDisplay').innerHTML += `<span class="variant-tag" style="background:#eee; padding:5px; margin:2px; border-radius:3px;">${b} (${s||'موحد'}) : ${p}ج</span>`; document.getElementById('vType').value=''; document.getElementById('vSize').value=''; document.getElementById('vPrice').value=''; } });
-        document.getElementById('saveProdBtn').addEventListener('click', () => { let n=document.getElementById('prodName').value, i=document.getElementById('prodImg').value, c=document.getElementById('prodCatSelect').value; if(n && tempVariants.length) { push(ref(db,'products'),{name:n,img:i,cat:c,variants:tempVariants,available:true}); alert('تم'); tempVariants=[]; document.getElementById('prodName').value=''; document.getElementById('tempVarsDisplay').innerHTML=''; } });
+        document.getElementById('addExBtn').addEventListener('click', () => {
+            let n = document.getElementById('exName').value;
+            let p = document.getElementById('exPrice').value;
+            
+            if(n && p) {
+                tempExtras.push({ name: n, price: parseInt(p) });
+                
+                // عرض ما تم إضافته
+                document.getElementById('tempExtrasDisplay').innerHTML += `
+                    <span class="variant-tag" style="background:#ffe0b2; color:#e65100; padding:5px; margin:2px; border-radius:3px;">
+                        ${n} (+${p}ج)
+                    </span>`;
+                
+                // تنظيف الحقول
+                document.getElementById('exName').value = '';
+                document.getElementById('exPrice').value = '';
+            }
+        });
+        document.getElementById('saveProdBtn').addEventListener('click', () => { 
+            let n = document.getElementById('prodName').value; 
+            let i = document.getElementById('prodImg').value; 
+            let c = document.getElementById('prodCatSelect').value; 
+            
+            if(n && tempVariants.length) { 
+                push(ref(db, 'products'), {
+                    name: n,
+                    img: i,
+                    cat: c,
+                    variants: tempVariants,
+                    extras: tempExtras, // <--- السطر ده المهم اللي بيحفظ الإضافات
+                    available: true
+                }); 
+                
+                alert('تم حفظ المنتج مع الإضافات'); 
+                
+                // تصفير كل شيء
+                tempVariants = []; 
+                tempExtras = []; 
+                document.getElementById('prodName').value = ''; 
+                document.getElementById('prodImg').value = ''; 
+                document.getElementById('tempVarsDisplay').innerHTML = ''; 
+                document.getElementById('tempExtrasDisplay').innerHTML = ''; 
+            } 
+        });
 
         let allProductsData = {};
 
