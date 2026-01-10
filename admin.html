@@ -6,6 +6,7 @@
     <title>لوحة تحكم نجف - المطور</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
     <style>
         :root { --blue: #18248b; --red: #8c0104; --white: #ffffff; --green: #27ae60; --gray: #f0f2f5; }
@@ -1024,7 +1025,7 @@
                     <button class="btn-blue" id="addCatBtn">إضافة</button>
                 </div>
                 <table class="users-table">
-                    <thead><tr><th>التصنيف</th><th>إجراءات</th></tr></thead>
+                    <thead><tr><th></th><th>التصنيف</th><th>إجراءات</th></tr></thead>
                     <tbody id="catManageList"></tbody>
                 </table>
             </div>
@@ -1864,15 +1865,43 @@
             if(n){ push(ref(db,'categories'),{name:n}); alert('تم'); document.getElementById('catMain').value=''; } 
         });
 
-        function populateCats(data) { 
-            const s=document.getElementById('prodCatSelect'); 
+        function populateCats(data) {
+            const s = document.getElementById('prodCatSelect');
             const list = document.getElementById('catManageList');
-            s.innerHTML='<option value="" disabled selected>اختر التصنيف</option>'; 
+            s.innerHTML = '<option value="" disabled selected>اختر التصنيف</option>';
             list.innerHTML = '';
-            Object.entries(data).forEach(([k, c])=>{
-                s.innerHTML+=`<option value="${c.name}">${c.name}</option>`;
-                list.innerHTML += `<tr><td><input type="text" value="${c.name}" id="cat-name-${k}" style="margin:0; text-align:center;"></td><td><button class="btn-blue" onclick="window.updateCat('${k}')">حفظ</button><button class="btn-red" onclick="window.delCat('${k}')">حذف</button></td></tr>`;
-            }); 
+
+            // تحويل البيانات لمصفوفة وترتيبها حسب حقل 'order'
+            const sortedCats = Object.entries(data).map(([k, v]) => ({ id: k, ...v }))
+                .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            sortedCats.forEach((c) => {
+                s.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+                list.innerHTML += `
+                    <tr data-id="${c.id}">
+                        <td style="cursor: move; color: #888;"><i class="fas fa-grip-lines"></i></td>
+                        <td><input type="text" value="${c.name}" id="cat-name-${c.id}" style="margin:0; text-align:center;"></td>
+                        <td>
+                            <button class="btn-blue" onclick="window.updateCat('${c.id}')">حفظ</button>
+                            <button class="btn-red" onclick="window.delCat('${c.id}')">حذف</button>
+                        </td>
+                    </tr>`;
+            });
+
+            // تفعيل خاصية السحب والإفلات
+            new Sortable(list, {
+                animation: 150,
+                handle: '.fa-grip-lines', // السحب من أيقونة الخطوط فقط
+                onEnd: function() {
+                    // عند الانتهاء من السحب، نقوم بتحديث الترتيب في القاعدة
+                    const rows = list.querySelectorAll('tr');
+                    rows.forEach((row, index) => {
+                        const catId = row.getAttribute('data-id');
+                        update(ref(db, 'categories/' + catId), { order: index });
+                    });
+                    alert('تم تحديث الترتيب بنجاح');
+                }
+            });
         }
 
         window.updateCat = (k) => {
