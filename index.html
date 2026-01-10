@@ -223,6 +223,10 @@
 
         let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null, tempCoords=null;
 
+        // متغيرات مؤقتة لحساب السعر
+        let currentQty = 1;
+        let currentExtrasPrice = 0;
+
         // Ensure user has addresses array if loaded from old structure
         if(currentUser && !currentUser.addresses) {
             currentUser.addresses = [{ zone: currentUser.zone, address: currentUser.address, coords: currentUser.coords }];
@@ -371,40 +375,146 @@
 
         function setupUserUI(){ document.getElementById('loginBtnNav').style.display='none'; document.getElementById('userProfileNav').style.display='flex'; }
 
-        window.openOptions=function(n){
-            selectedProductTemp=products.find(p=>p.name===n); 
-            document.getElementById('optProdName').innerText=n;
-            const l=document.getElementById('variantsList'); l.innerHTML='';
-            selectedProductTemp.variants.forEach((v,i)=>{
-                l.innerHTML+=`<div class="option-item" onclick="selectVar(${i},this)"><div class="option-details"><b>${v.bread}${v.size && v.size !== 'موحد' ? ' ('+v.size+')' : ''}</b></div><div style="font-weight:bold;color:var(--red)">${v.price} ج</div></div>`;
+        // دالة فتح نافذة الخيارات المحدثة
+        window.openOptions = function(n) {
+            selectedProductTemp = products.find(p => p.name === n);
+            document.getElementById('optProdName').innerText = n;
+
+            // 1. عرض الأحجام (Variants)
+            const l = document.getElementById('variantsList');
+            l.innerHTML = '<h4 style="margin:5px 0;">اختر الحجم:</h4>';
+            selectedProductTemp.variants.forEach((v, i) => {
+                l.innerHTML += `<div class="option-item" onclick="selectVar(${i},this)"><div class="option-details"><b>${v.bread}${v.size && v.size !== 'موحد' ? ' ('+v.size+')' : ''}</b></div><div style="font-weight:bold;color:var(--red)">${v.price} ج</div></div>`;
             });
-            if(l.children[0]) window.selectVar(0,l.children[0]);
+
+            // 2. عرض الإضافات (Extras) إن وجدت
+            const extrasDiv = document.createElement('div');
+            extrasDiv.style.marginTop = "15px";
+            if(selectedProductTemp.extras && selectedProductTemp.extras.length > 0) {
+                extrasDiv.innerHTML = '<h4 style="margin:5px 0;">إضافات:</h4>';
+                selectedProductTemp.extras.forEach((ex, i) => {
+                    extrasDiv.innerHTML += `
+                    <label class="option-item" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <input type="checkbox" class="extra-checkbox" data-name="${ex.name}" data-price="${ex.price}" onchange="window.calcTotal()">
+                            <span style="margin-right:8px;">${ex.name}</span>
+                        </div>
+                        <span style="color:var(--red); font-weight:bold;">+${ex.price} ج</span>
+                    </label>`;
+                });
+            }
+            l.appendChild(extrasDiv);
+
+            // 3. إضافة عداد الكمية (Quantity Counter)
+            const qtyDiv = document.createElement('div');
+            qtyDiv.innerHTML = `
+                <div style="display:flex; align-items:center; justify-content:center; gap:15px; margin: 20px 0;">
+                    <button onclick="changeQty(-1)" style="background:#ddd; border:none; width:35px; height:35px; border-radius:50%; font-weight:bold; font-size:1.2rem;">-</button>
+                    <span id="qtyDisplay" style="font-size:1.5rem; font-weight:bold;">1</span>
+                    <button onclick="changeQty(1)" style="background:var(--blue); color:white; border:none; width:35px; height:35px; border-radius:50%; font-weight:bold; font-size:1.2rem;">+</button>
+                </div>
+            `;
+            l.appendChild(qtyDiv);
+
+            // إعادة تعيين القيم
+            currentQty = 1;
+            currentExtrasPrice = 0;
+
+            // اختيار أول حجم تلقائياً
+            if (l.getElementsByClassName('option-item')[0]) window.selectVar(0, l.getElementsByClassName('option-item')[0]);
+
             document.getElementById('itemNote').value = '';
-            document.getElementById('optionsModal').style.display='flex';
+            document.getElementById('optionsModal').style.display = 'flex';
+            window.calcTotal(); // حساب أولي
         }
 
-        window.selectVar=function(i,el){ 
-            document.querySelectorAll('.option-item').forEach(x=>x.classList.remove('selected')); el.classList.add('selected');
-            selectedVariantTemp=selectedProductTemp.variants[i]; document.getElementById('selectedPrice').innerText=selectedVariantTemp.price; 
+        window.selectVar=function(i,el){
+            // إزالة التحديد من عناصر الأحجام فقط (وليس الإضافات)
+            const allItems = document.getElementById('variantsList').children;
+            // Loop manuall or specific selector needed usually, but assuming structure:
+            document.querySelectorAll('.option-item:not(label)').forEach(x => x.classList.remove('selected'));
+
+            el.classList.add('selected');
+            selectedVariantTemp = selectedProductTemp.variants[i];
+            window.calcTotal();
         }
 
-        window.confirmAddToCart=function(){ 
-            cart.push({ ...selectedProductTemp, variant: selectedVariantTemp, note: document.getElementById('itemNote').value }); 
-            updateCart(); closeModal('optionsModal'); 
+        // دالة تغيير الكمية
+        window.changeQty = function(d) {
+            currentQty += d;
+            if(currentQty < 1) currentQty = 1;
+            document.getElementById('qtyDisplay').innerText = currentQty;
+            window.calcTotal();
         }
 
-        function updateCart(){ 
-            document.getElementById('cartCount').innerText=cart.length; 
-            const d=document.getElementById('cartItems'); 
-            let t=0; 
-            d.innerHTML=cart.map((i,x)=>{
-                t+=i.variant.price; 
-                return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;">
-                    <div><b>${i.name}</b><br><small>${i.variant.bread}</small>${i.note ? '<br><small style="color:#e67e22;">'+i.note+'</small>' : ''}</div>
-                    <div>${i.variant.price}ج <i class="fas fa-trash" style="color:red;cursor:pointer;margin-right:5px;" onclick="window.remItem(${x})"></i></div>
-                </div>`
-            }).join(''); 
-            document.getElementById('cartTotal').innerText=t; 
+        // دالة حساب السعر الكلي اللحظي
+        window.calcTotal = function() {
+            if(!selectedVariantTemp) return;
+
+            // جمع سعر الإضافات المختارة
+            let exTotal = 0;
+            document.querySelectorAll('.extra-checkbox:checked').forEach(box => {
+                exTotal += parseInt(box.getAttribute('data-price'));
+            });
+
+            // المعادلة: (سعر الساندوتش + سعر الإضافات) * العدد
+            const unitPrice = selectedVariantTemp.price + exTotal;
+            const finalPrice = unitPrice * currentQty;
+
+            document.getElementById('selectedPrice').innerText = finalPrice;
+        }
+
+        // دالة الإضافة للسلة المحدثة
+        window.confirmAddToCart = function() {
+            // تجميع الإضافات المختارة كنص وكائنات
+            let selectedExtras = [];
+            document.querySelectorAll('.extra-checkbox:checked').forEach(box => {
+                selectedExtras.push({ name: box.getAttribute('data-name'), price: parseInt(box.getAttribute('data-price')) });
+            });
+
+            // حساب السعر النهائي للعنصر الواحد (بالإضافات) * الكمية
+            let unitPrice = selectedVariantTemp.price + selectedExtras.reduce((a,b)=>a+b.price, 0);
+            let totalItemPrice = unitPrice * currentQty;
+
+            cart.push({
+                ...selectedProductTemp,
+                variant: selectedVariantTemp,
+                quantity: currentQty,            // تخزين الكمية
+                extras: selectedExtras,          // تخزين الإضافات
+                note: document.getElementById('itemNote').value,
+                totalItemPrice: totalItemPrice   // السعر المحسوب لهذا البند
+            });
+
+            updateCart();
+            closeModal('optionsModal');
+        }
+
+        // تحديث عرض السلة ليشمل التفاصيل الجديدة
+        function updateCart() {
+            document.getElementById('cartCount').innerText = cart.length;
+            const d = document.getElementById('cartItems');
+            let t = 0;
+
+            d.innerHTML = cart.map((i, x) => {
+                t += i.totalItemPrice; // نجمع السعر الكلي المحسوب
+
+                // تنسيق عرض الإضافات
+                let extrasText = i.extras && i.extras.length > 0
+                    ? `<br><small style="color:green;">+ ${i.extras.map(e=>e.name).join('، ')}</small>`
+                    : '';
+
+                return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+                    <div>
+                        <b>${i.name} (x${i.quantity})</b>
+                        <br><small>${i.variant.bread}</small>
+                        ${extrasText}
+                        ${i.note ? '<br><small style="color:#e67e22;">ملاحظة: '+i.note+'</small>' : ''}
+                    </div>
+                    <div>${i.totalItemPrice}ج <i class="fas fa-trash" style="color:red; cursor:pointer; margin-right:5px;" onclick="window.remItem(${x})"></i></div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('cartTotal').innerText = t;
         }
 
         window.remItem=function(i){ cart.splice(i,1); updateCart(); }
