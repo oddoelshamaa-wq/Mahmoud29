@@ -221,7 +221,7 @@
             }, 2500); 
         });
 
-        let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null, tempCoords=null;
+        let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null, tempCoords=null, globalExtrasList = {};
 
         // متغيرات مؤقتة لحساب السعر
         let currentQty = 1;
@@ -234,10 +234,11 @@
         }
 
         onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
-        onValue(ref(db, 'categories'), (s) => { 
+        onValue(ref(db, 'categories'), (s) => {
             const nav=document.getElementById('categoryNav'); nav.innerHTML='<button class="cat-btn active" onclick="window.filterCat(\'all\',this)">الكل</button>';
             Object.values(s.val()||{}).forEach(c=>nav.innerHTML+=`<button class="cat-btn" onclick="window.filterCat('${c.name}',this)">${c.name}</button>`);
         });
+        onValue(ref(db, 'global_extras'), (s) => { globalExtrasList = s.val() || {}; });
 
         window.filterCat = function(c,b) { document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); loadProducts(c); }
         window.loadProducts = function(c) {
@@ -404,6 +405,24 @@
                 });
             }
             l.appendChild(extrasDiv);
+
+            // Global Extras
+            const globalExtrasDiv = document.createElement('div');
+            globalExtrasDiv.style.marginTop = "15px";
+            if(globalExtrasList && Object.keys(globalExtrasList).length > 0) {
+                globalExtrasDiv.innerHTML = '<h4 style="margin:5px 0;">إضافات عامة:</h4>';
+                Object.entries(globalExtrasList).forEach(([id, ex]) => {
+                    globalExtrasDiv.innerHTML += `
+                    <label class="option-item" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <input type="checkbox" class="extra-checkbox" data-name="${ex.name}" data-price="${ex.price}" onchange="window.calcTotal()">
+                            <span style="margin-right:8px;">${ex.name}</span>
+                        </div>
+                        <span style="color:var(--red); font-weight:bold;">+${ex.price} ج</span>
+                    </label>`;
+                });
+            }
+            l.appendChild(globalExtrasDiv);
 
             // 3. إضافة عداد الكمية (Quantity Counter)
             const qtyDiv = document.createElement('div');
