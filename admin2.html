@@ -745,6 +745,31 @@
         </style>
     </head>
     <body>
+        <!-- شاشة تسجيل الدخول (مستوحاة من الصورة) -->
+<div id="loginOverlay" style="position: fixed; inset: 0; background: #0c1445; z-index: 9999; display: flex; align-items: center; justify-content: center; font-family: 'Cairo', sans-serif;">
+    <div style="background: white; width: 90%; max-width: 400px; padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <!-- أيقونة المستخدم -->
+        <div style="background: #f8f9fa; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+            <i class="fas fa-user-shield" style="font-size: 35px; color: #1e2a78;"></i>
+        </div>
+        
+        <h2 style="color: #1e2a78; margin-bottom: 30px; font-weight: 800;">بوابة الموظفين - نجف</h2>
+        
+        <div style="position: relative; margin-bottom: 20px;">
+            <i class="fas fa-user" style="position: absolute; right: 15px; top: 15px; color: #a0aec0;"></i>
+            <input type="text" id="username" placeholder="اسم الموظف" style="width: 100%; padding: 12px 40px 12px 15px; border: 1px solid #edf2f7; border-radius: 8px; background: #f8f9fa; box-sizing: border-box;">
+        </div>
+        
+        <div style="position: relative; margin-bottom: 30px;">
+            <i class="fas fa-lock" style="position: absolute; right: 15px; top: 15px; color: #a0aec0;"></i>
+            <input type="password" id="password" placeholder="كلمة المرور" style="width: 100%; padding: 12px 40px 12px 15px; border: 1px solid #edf2f7; border-radius: 8px; background: #f8f9fa; box-sizing: border-box;">
+        </div>
+        
+        <button onclick="login()" style="width: 100%; padding: 14px; background: #8b0000; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);">دخول للنظام</button>
+        
+        <p style="margin-top: 25px; font-size: 0.75rem; color: #a0aec0;">جميع الحقوق محفوظة لشركة نجف © 2024</p>
+    </div>
+</div>
 
         <!-- القائمة الجانبية المستوحاة من الصورة -->
         <div class="sidebar">
@@ -811,6 +836,10 @@
             <header>
                 <h2 id="sectionTitle" data-key="m_orders">الطلبات</h2>
                 <button onclick="location.reload()" class="lang-btn" style="width: auto; padding: 5px 15px;"><i class="fas fa-sync"></i></button>
+                <!-- زر تسجيل الخروج -->
+<div class="menu-item" onclick="handleLogout()" style="color: #d93025; border-top: 1px solid #eee; margin-top: 10px;">
+    <i class="fas fa-sign-out-alt"></i> <span>تسجيل الخروج</span>
+</div>
             </header>
 
 
@@ -2079,7 +2108,89 @@
             remove(ref(db, 'staff/' + id));
         }
     };
+    window.handleLogout = () => {
+    if (confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
+        // إذا كنت تستخدم Firebase Auth أضف هذا السطر:
+        // import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // const auth = getAuth();
+        // signOut(auth).then(() => { location.reload(); });
 
+        // حالياً سنقوم فقط بتحويل المستخدم أو مسح البيانات المحلية
+        alert("تم تسجيل الخروج بنجاح");
+        // هنا يمكنك توجيه المستخدم لصفحة تسجيل الدخول
+        // window.location.href = "login.html"; 
+    }
+};
+// دالة تسجيل الدخول
+window.login = () => {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+
+    // يمكنك تغيير "admin" و "123" بأي بيانات تريدها
+    if (user === "admin" && pass === "123") {
+        document.getElementById('loginOverlay').style.display = 'none';
+        localStorage.setItem('isLoggedIn', 'true'); // حفظ حالة الدخول
+    } else {
+        alert("خطأ في اسم المستخدم أو كلمة المرور!");
+    }
+};
+
+// دالة تسجيل الخروج (التي ستظهر لك الشاشة مرة أخرى)
+window.logout = () => {
+    if (confirm("هل تريد تسجيل الخروج والعودة لشاشة الدخول؟")) {
+        localStorage.removeItem('isLoggedIn');
+        document.getElementById('loginOverlay').style.display = 'flex';
+        // مسح الحقول عند الخروج
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+    }
+};
+
+// التحقق عند تحميل الصفحة إذا كان مسجل دخول مسبقاً
+window.onload = () => {
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+        document.getElementById('loginOverlay').style.display = 'none';
+    }
+};
+// --- نظام تسجيل الدخول والخروج ---
+
+// 1. عند الضغط على زر "دخول للنظام"
+window.handleLogin = () => {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+
+    // اسم المستخدم: admin | كلمة المرور: 123 (يمكنك تغييرها)
+    if (user === "admin" && pass === "123") {
+        document.getElementById('loginOverlay').style.display = 'none';
+        localStorage.setItem('nagafLoggedIn', 'true'); // حفظ الجلسة
+    } else {
+        alert("❌ بيانات الدخول غير صحيحة");
+    }
+};
+
+// 2. عند الضغط على زر "تسجيل الخروج"
+window.handleLogout = () => {
+    if (confirm("هل أنت متأكد من تسجيل الخروج؟")) {
+        localStorage.removeItem('nagafLoggedIn'); // حذف الجلسة
+        document.getElementById('loginOverlay').style.display = 'flex'; // إظهار الشاشة الزرقاء
+        
+        // تفريغ الحقول
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        
+        alert("تم تسجيل الخروج بنجاح");
+    }
+};
+
+// 3. التحقق التلقائي عند فتح الصفحة
+window.addEventListener('DOMContentLoaded', () => {
+    const isLoggedIn = localStorage.getItem('nagafLoggedIn');
+    if (isLoggedIn === 'true') {
+        document.getElementById('loginOverlay').style.display = 'none';
+    } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+    }
+});
         </script>
     </body>
     </html>
