@@ -1050,39 +1050,54 @@
                 <div class="card-box"><h3>Settings</h3><p>إعدادات المتجر</p></div>
             </div>
 
-            <!-- قسم الفريق -->
-            <div id="staff" class="section">
-                <div class="card-box">
-                    <h3 style="margin-top: 0; color: #1a73e8; font-size: 1.2rem;">👥 إضافة عضو جديد للفريق</h3>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="staff_name" placeholder="اسم الموظف" style="flex:2; padding:10px; border: 1px solid #ddd; border-radius: 8px; min-width: 150px;">
-                        <select id="staff_role" style="flex:1; padding:10px; border: 1px solid #ddd; border-radius: 8px; min-width: 120px;">
-                            <option value="شيف">شيف</option>
-                            <option value="كاشير">كاشير</option>
-                            <option value="طيار">طيار</option>
-                        </select>
-                        <button onclick="addStaffManual()" class="btn-accept" style="padding:10px 30px; white-space: nowrap;"><i class="fas fa-plus"></i> إضافة</button>
-                    </div>
-                </div>
-
-                <div class="card-box">
-                    <h3 style="margin-top: 0; font-size: 1.1rem;">📋 قائمة الفريق</h3>
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">
-                                    <th style="padding: 12px; text-align: right; font-weight: 700;">الاسم</th>
-                                    <th style="padding: 12px; text-align: right; font-weight: 700;">الوظيفة</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 700;">إجراء</th>
-                                </tr>
-                            </thead>
-                            <tbody id="staffTableBody" style="font-family: 'Cairo', sans-serif;">
-                                <tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">جاري تحميل الفريق...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+<!-- قسم فريق العمل بالتصميم الجديد -->
+<div id="staff" class="section">
+    <!-- الجزء العلوي: فورم إضافة موظف (جهة اليسار في التصميم لكن RTL) -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+        <div class="card-box" style="width: 400px; text-align: right; border: 1px solid #e5e7eb; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 25px;">
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #111;">إضافة موظف جديد</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 5px; color: #374151;">الاسم</label>
+                <input type="text" id="staff_name_new" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box;">
             </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 5px; color: #374151;">الباسورد</label>
+                <input type="password" id="staff_pass_new" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 5px; color: #374151;">الصلاحية</label>
+                <select id="staff_role_new" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; background: white;">
+                    <option value="متلقي طلبات">متلقي طلبات</option>
+                    <option value="مدير">مدير</option>
+                    <option value="طيار">طيار</option>
+                </select>
+            </div>
+
+            <button onclick="addStaffCustom()" style="width: 100%; background: #1e2a78; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">إضافة</button>
+        </div>
+    </div>
+
+    <!-- عنوان القائمة -->
+    <h3 style="text-align: right; margin-bottom: 15px; font-weight: 800;">قائمة الموظفين</h3>
+
+    <!-- جدول الموظفين بتصميم الصورة -->
+    <div style="border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+        <!-- الهيدر (أزرق غامق) -->
+        <div style="background: #1e2a78; color: white; display: flex; padding: 15px 20px; font-weight: bold; text-align: center; font-size: 0.9rem;">
+            <div style="flex: 2; text-align: right;">الاسم والحالة</div>
+            <div style="flex: 1;">الصلاحية</div>
+            <div style="flex: 1;">إجراءات</div>
+        </div>
+
+        <!-- محتوى الجدول (خلفية داكنة جداً) -->
+        <div id="staffListContainer" style="background: #111827; min-height: 200px;">
+            <!-- الصفوف سيتم إنشاؤها هنا بواسطة JavaScript -->
+        </div>
+    </div>
+</div>
 
         <!-- مودال إضافة/تعديل منتج -->
         <div class="modal" id="productModal">
@@ -2160,7 +2175,76 @@
             remove(ref(db, 'staff/' + id));
         }
     };
-    window.handleLogout = () => {
+            // دالة إضافة موظف جديدة تدعم الباسورد
+window.addStaffCustom = async () => {
+    const name = document.getElementById('staff_name_new').value.trim();
+    const pass = document.getElementById('staff_pass_new').value.trim();
+    const role = document.getElementById('staff_role_new').value;
+
+    if (!name || !pass) return alert("❌ يرجى ملء الاسم وكلمة المرور");
+
+    try {
+        const staffRef = ref(db, 'staff');
+        await push(staffRef, {
+            name: name,
+            password: pass,
+            role: role,
+            status: 'offline', // افتراضي
+            createdAt: new Date().toISOString()
+        });
+        
+        // تفريغ الحقول
+        document.getElementById('staff_name_new').value = '';
+        document.getElementById('staff_pass_new').value = '';
+        alert("✅ تم إضافة الموظف بنجاح");
+    } catch (e) {
+        alert("❌ خطأ: " + e.message);
+    }
+};
+
+// تحديث عرض الموظفين ليطابق التصميم (الخلفية السوداء)
+onValue(ref(db, 'staff'), (snap) => {
+    const data = snap.val();
+    const container = document.getElementById('staffListContainer');
+    if (!container) return;
+
+    container.innerHTML = "";
+    if (data) {
+        Object.entries(data).forEach(([id, s]) => {
+            container.innerHTML += `
+                <div style="display: flex; align-items: center; padding: 18px 20px; border-bottom: 1px solid #1f2937; color: white; transition: 0.2s;" onmouseover="this.style.background='#1f2937'" onmouseout="this.style.background='transparent'">
+                    <!-- الاسم والحالة -->
+                    <div style="flex: 2; text-align: right;">
+                        <div style="font-weight: bold; font-size: 1rem;">${s.name}</div>
+                        <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                            <span style="width: 8px; height: 8px; background: ${s.status === 'online' ? '#10b981' : '#6b7280'}; border-radius: 50%; display: inline-block;"></span>
+                            ${s.status === 'online' ? 'متصل' : 'غير متصل'}
+                        </div>
+                    </div>
+
+                    <!-- الصلاحية -->
+                    <div style="flex: 1; text-align: center; font-size: 0.9rem; color: #e5e7eb;">
+                        ${s.role}
+                    </div>
+
+                    <!-- الأزرار (برتقالي وأحمر) -->
+                    <div style="flex: 1; display: flex; justify-content: center; gap: 10px;">
+                        <button onclick="editStaff('${id}')" style="background: #f59e0b; color: white; border: none; width: 32px; height: 32px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="removeStaff('${id}')" style="background: #ef4444; color: white; border: none; width: 32px; height: 32px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        container.innerHTML = '<div style="color: #9ca3af; text-align: center; padding: 40px;">لا يوجد موظفين حالياً</div>';
+    }
+});
+
+            window.handleLogout = () => {
     if (confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
         // إذا كنت تستخدم Firebase Auth أضف هذا السطر:
         // import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
