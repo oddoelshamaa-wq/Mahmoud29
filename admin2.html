@@ -742,6 +742,58 @@
     object-fit: cover;
     border: 1px solid #ddd;
 }
+
+.sidebar:hover ~ .main-content {
+    margin-right: 260px; /* يزق المحتوى لما القائمة تفتح */
+}/* 1. إعدادات القائمة الجانبية الأساسية (وهي مقفولة) */
+.sidebar {
+    width: 70px; /* العرض وهي مقفولة (أيقونات بس) */
+    height: 100vh;
+    background: white;
+    border-left: 1px solid #dadce0;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden; /* عشان الكلام ميبانش وهي مقفولة */
+    transition: width 0.3s ease; /* سرعة الحركة وهي بتفتح */
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+/* 2. لما تقف بالماوس على القائمة (وهي بتفتح) */
+.sidebar:hover {
+    width: 260px; /* العرض وهي مفتوحة */
+    box-shadow: -5px 0 15px rgba(0,0,0,0.05); /* ظل خفيف لما تفتح */
+}
+
+/* 3. إخفاء النصوص والأسهم وهي مقفولة */
+.menu-item span, 
+.menu-item .chevron, 
+.sidebar-header span {
+    opacity: 0; /* مختفي تماماً */
+    white-space: nowrap; /* عشان الكلام م ينزلش سطر جديد */
+    transition: opacity 0.2s; /* سرعة ظهور الكلام */
+}
+
+/* 4. إظهار النصوص والأسهم لما تفتح القائمة */
+.sidebar:hover .menu-item span, 
+.sidebar:hover .menu-item .chevron, 
+.sidebar:hover .sidebar-header span {
+    opacity: 1; /* يظهر */
+}
+
+/* 5. تعديل المسافة بين الأيقونة والكلام */
+.menu-item i {
+    min-width: 30px; /* مساحة ثابتة للأيقونة عشان متتحركش */
+    text-align: center;
+}
+
+/* 6. تعديل مكان المحتوى الرئيسي عشان ميبقاش تحت القائمة */
+.main-content {
+    margin-right: 70px; /* نفس عرض القائمة وهي مقفولة */
+    transition: margin-right 0.3s;
+}
         </style>
     </head>
     <body>
